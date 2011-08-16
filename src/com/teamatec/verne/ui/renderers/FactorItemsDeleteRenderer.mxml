@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:GridItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					xmlns:s="library://ns.adobe.com/flex/spark" 
+					xmlns:mx="library://ns.adobe.com/flex/mx" clipAndEnableScrolling="true" creationComplete="creationCompleteHandler(event)">
+	
+	<fx:Script>
+		<![CDATA[
+			import com.teamatec.verne.models.ItemsModel;
+			import com.teamatec.verne.ui.popups.FactorItemsPopup;
+			override public function prepare(hasBeenRecycled:Boolean):void {
+				//lblData.text = data[column.dataField]
+			}
+			
+			import com.greensock.TweenMax;
+			import com.teamatec.verne.models.AbstractModel;
+			import com.teamatec.verne.ui.elements.AbstractView;
+			import com.teamatec.verne.ui.elements.forms.AbstractForm;
+			import com.teamatec.verne.ui.elements.grids.AbstractGrid;
+			
+			import mx.core.UIComponent;
+			import mx.events.FlexEvent;
+			protected var itemToColor:Dictionary;
+			protected var abstractGrid:AbstractGrid;
+			
+			public function iconize(item:UIComponent):void
+			{
+				item.buttonMode = true;
+				item.addEventListener(MouseEvent.ROLL_OVER,rollOver);
+				item.addEventListener(MouseEvent.ROLL_OUT,rollOut);
+			}
+			
+			protected function rollOver(event:MouseEvent):void
+			{
+				TweenMax.to(event.target, .5, {colorTransform:{tint:itemToColor[event.target], tintAmount:1}});
+			}
+			
+			protected function rollOut(event:MouseEvent):void
+			{
+				TweenMax.to(event.target, .5, {colorTransform:{tint:0xff0000, tintAmount:0}});
+			}
+			
+			protected function creationCompleteHandler(event:FlexEvent):void
+			{
+				itemToColor = new Dictionary();
+				itemToColor[deleteButton] = 0xff0000;
+				itemToColor[saveButton] = 0x00ff00;
+				iconize(deleteButton);
+				iconize(saveButton);
+			}
+			
+			protected function deleteButton_clickHandler(event:MouseEvent):void
+			{
+				var model:ItemsModel = new ItemsModel();
+				model.deleteRows(column.dataField +" = " + data[column.dataField]);
+				grid.dataProvider.removeItemAt(rowIndex);
+			}
+			
+			protected function saveButton_clickHandler(event:MouseEvent):void
+			{
+				var model:ItemsModel = new ItemsModel();
+				trace([FactorItemsPopup.currentPopup.factor,data.product_id,data.description,data.count,data.tax,data.discount]);
+				model.update([FactorItemsPopup.currentPopup.factor,data.product_id,data.description,data.count,data.tax,data.discount],"item_id = "+data.item_id);
+			}
+			
+		]]>
+	</fx:Script>
+	<s:HGroup verticalCenter="0" horizontalCenter="0" verticalAlign="middle">
+		<s:Image id="saveButton" source="@Embed('resources/images/save.png')" toolTip="ذخیره" click="saveButton_clickHandler(event)"/>
+		<s:Image id="deleteButton" source="@Embed('resources/images/delete.png')" toolTip="حذف" click="deleteButton_clickHandler(event)"/>
+	</s:HGroup>
+	
+</s:GridItemRenderer>

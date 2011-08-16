@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:GridItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					xmlns:s="library://ns.adobe.com/flex/spark" 
+					xmlns:mx="library://ns.adobe.com/flex/mx" clipAndEnableScrolling="true" creationComplete="creationCompleteHandler(event)" dataChange="dataChangeHandler(event)">
+	
+	<fx:Script>
+		<![CDATA[
+			import com.greensock.TweenMax;
+			import com.maclema.mysql.MySqlToken;
+			import com.maclema.mysql.ResultSet;
+			import com.teamatec.utils.DateUtil;
+			import com.teamatec.utils.NumberUtil;
+			import com.teamatec.verne.models.AbstractModel;
+			import com.teamatec.verne.models.ClientModel;
+			import com.teamatec.verne.models.FactorModel;
+			import com.teamatec.verne.models.ItemsModel;
+			import com.teamatec.verne.models.ProductModel;
+			import com.teamatec.verne.models.SequenceModel;
+			import com.teamatec.verne.models.StandardFactorModel;
+			import com.teamatec.verne.ui.elements.AbstractView;
+			import com.teamatec.verne.ui.elements.forms.AbstractForm;
+			import com.teamatec.verne.ui.elements.grids.AbstractGrid;
+			import com.teamatec.verne.ui.elements.grids.FactorsGrid;
+			import com.teamatec.verne.ui.popups.FactorItemsPopup;
+			import com.teamatec.verne.ui.templates.AbstractTemplate;
+			
+			import mx.collections.ArrayCollection;
+			import mx.core.UIComponent;
+			import mx.effects.Sequence;
+			import mx.events.FlexEvent;
+			protected var itemToColor:Dictionary;
+			protected var abstractGrid:AbstractGrid;
+			private var factorModel:StandardFactorModel;
+			protected var row_id:String;
+			protected var factorData:ArrayCollection;
+			protected var sequence_id:String;
+			protected var last:String;
+			
+			
+			override public function prepare(hasBeenRecycled:Boolean):void {
+				//lblData.text = data[column.dataField];
+				column.headerText = "";
+			}
+			
+			public function iconize(item:UIComponent):void
+			{
+				item.buttonMode = true;
+				item.addEventListener(MouseEvent.ROLL_OVER,rollOver);
+				item.addEventListener(MouseEvent.ROLL_OUT,rollOut);
+			}
+			
+			protected function rollOver(event:MouseEvent):void
+			{
+				TweenMax.to(event.target, .5, {colorTransform:{tint:itemToColor[event.target], tintAmount:1}});
+			}
+			
+			protected function rollOut(event:MouseEvent):void
+			{
+				TweenMax.to(event.target, .5, {colorTransform:{tint:0xff0000, tintAmount:0}});
+			}
+			
+			protected function creationCompleteHandler(event:FlexEvent):void
+			{
+				itemToColor = new Dictionary();
+				itemToColor[itemsButton] = 0x90c500;
+				itemToColor[printButton] = 0x90c500;
+				itemToColor[normalPrintButton] = 0x90c500;
+				itemToColor[returnButton] = 0x90c500;
+				iconize(itemsButton);
+				iconize(printButton);
+				iconize(normalPrintButton);
+				iconize(returnButton);
+			}
+			
+			protected function itemsButton_clickHandler(event:MouseEvent):void
+			{
+				abstractGrid = AbstractView.gridToAbstract[grid.dataGrid];
+				var id:String = data[column.dataField];
+				var items:FactorItemsPopup = new FactorItemsPopup();
+				items.factor = id;
+				abstractGrid.addElement(items);
+			}
+			
+			protected function printButton_clickHandler(event:MouseEvent):void
+			{
+				buildFactor("standardPrint");
+			}
+			
+			protected function buildFactor(item:String):void
+			{
+				factorModel = new StandardFactorModel();
+				abstractGrid = AbstractView.gridToAbstract[grid.dataGrid];
+				Verne.applicationInterface.view.currentState = item;
+				factorModel.title = data.title;
+				factorModel.id = data.factor_id;
+				factorModel.taxSum = data.tax;
+				factorModel.discountTotalSum = data.discount;
+				factorModel.totalWithTaxSum = data.tax - data.discount;
+				factorModel.serial = NumberUtil.zeroPad(data.serial,6);
+				var shamsiDate:Vector.<uint> = Converter.changeMToSh(data.factor_date.getFullYear(),data.factor_date.getMonth()+1,data.factor_date.getDate());
+				factorModel.date = shamsiDate[0]+"/"+NumberUtil.digital(shamsiDate[1])+"/"+NumberUtil.digital(shamsiDate[2]);
+				factorModel.condition = data.factor_condition;
+				factorModel.isCash = data.is_cash;
+				FactorsGrid.factorItem[item].dataProvider = factorModel; 
+				var companyModel:ClientModel = new ClientModel();
+				var clientModel:ClientModel = new ClientModel();
+				companyModel.selectALL(onCompany," WHERE client_id="+data.company_id);
+				clientModel.selectALL(onClient," WHERE client_id="+data.client_id);
+				var itemsModel:ItemsModel = new ItemsModel();
+				itemsModel.selectALL(onItems," WHERE factor_id="+data.factor_id);
+			}
+			
+			protected function onCompany(result:ResultSet, token:MySqlToken):void
+			{
+				var client:Object = result.getRows()[0];
+				factorModel.ownerName = client.title;
+				factorModel.ownerAddress = client.address;
+				factorModel.ownerCity = client.city;
+				factorModel.ownerEconomicCode = client.economic_code;
+				factorModel.ownerNationalCode = client.national_code;
+				factorModel.ownerPostalCode = client.postal_code;
+				factorModel.ownerState = client.state;
+				factorModel.ownerTell = client.phone;
+				factorModel.ownerTownship = client.township;
+			}
+			
+			protected function onClient(result:ResultSet, token:MySqlToken):void
+			{
+				if(result.getRows().length > 0)
+				{
+					var client:Object = result.getRows()[0];
+					factorModel.clientName = client.title;
+					factorModel.clientAddress = client.address;
+					factorModel.clientCity = client.city;
+					factorModel.clientEconomicCode = client.economic_code;
+					factorModel.clientNationalCode = client.national_code;
+					factorModel.clientPostalCode = client.postal_code;
+					factorModel.clientState = client.state;
+					factorModel.clientTell = client.phone;
+					factorModel.clientTownship = client.township;
+				}
+			}
+			
+			protected function onItems(result:ResultSet, token:MySqlToken):void
+			{
+				factorModel.items = result.getRows();
+				trace(factorModel.items);
+			}
+			
+			protected function normalPrintButton_clickHandler(event:MouseEvent):void
+			{
+				buildFactor("fanikPrint");
+			}
+			
+			protected function dataChangeHandler(event:FlexEvent):void
+			{
+				if(rowIndex == 0)
+				{
+					FactorsGrid.fastPrintFunction = normalPrintButton_clickHandler;
+				}
+			}
+			
+			protected function returnButton_clickHandler(event:MouseEvent):void
+			{
+				abstractGrid = AbstractView.gridToAbstract[grid.dataGrid];
+				var id:String = data[column.dataField];
+				
+				var sequence:SequenceModel = new SequenceModel();
+				sequence.selectALL(onSequence," WHERE title ='فاکتور مرجوعی'");
+			}
+			
+			protected function onSequence(result:ResultSet, token:MySqlToken):void
+			{
+				if(result.getRows().length > 0)
+				{
+					var item:Object = result.getRows()[0];
+					TweenMax.to(returnButton, .5, {colorTransform:{tint:0xffffff, tintAmount:1}});
+					sequence_id = item.sequence_id;
+					var serial:String = String(item.value + 1);
+					var model:FactorModel = new FactorModel();
+					model.insert([sequence_id,"فاکتور مرجوعی","",data.company_id,data.client_id,serial,DateUtil.getMySQLDate(new Date()),data.total,data.is_chash,data.factor_condition,data.discount,data.tax]);
+					model.lastInsertedId(lastInsertedId,"factor_id")
+				}
+				else
+				{
+					TweenMax.to(returnButton, .5, {colorTransform:{tint:0xff0000, tintAmount:1}});
+				}
+			}
+			
+			protected function lastInsertedId(result:ResultSet, token:MySqlToken):void
+			{
+				last = result.getRows()[0].last;
+				var itemsModel:ItemsModel = new ItemsModel();
+				itemsModel.selectALL(allProducts," WHERE factor_id = "+data.factor_id);
+			}
+			
+			protected function allProducts(data:ResultSet, token:MySqlToken):void
+			{
+				var items:ArrayCollection = data.getRows();
+				var productModel:ProductModel = new ProductModel();
+				var item:Object;
+				var itemsModel:ItemsModel = new ItemsModel();
+				for(var i:uint = 0;i<items.length;i++)
+				{
+					item = items.getItemAt(i);
+					productModel.addStorage(item.count*2,item.product_id);
+					itemsModel.insert([last,item.product_id,item.description,item.count,item.tax,item.discount]);
+				}
+				abstractGrid.selectData();
+			}
+			
+			
+		]]>
+	</fx:Script>
+	<s:HGroup verticalCenter="0" horizontalCenter="0" verticalAlign="middle">
+		<s:Image id="itemsButton" source="@Embed('resources/images/items.png')" toolTip="آیتم ها" click="itemsButton_clickHandler(event)"/>
+		<s:Image id="printButton" source="@Embed('resources/images/standard-print.png')" toolTip="چاپ فاکتور رسمی" click="printButton_clickHandler(event)"/>
+		<s:Image id="normalPrintButton" source="@Embed('resources/images/normal-print.png')" toolTip="چاپ فاکتور غیر رسمی" click="normalPrintButton_clickHandler(event)"/>
+		<s:Image id="returnButton" source="@Embed('resources/images/save.png')" toolTip="صدور فاکتور مرجوعی" click="returnButton_clickHandler(event)"/>
+	</s:HGroup>
+</s:GridItemRenderer>

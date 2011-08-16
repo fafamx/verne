@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<reports:AbstractReport xmlns:fx="http://ns.adobe.com/mxml/2009" 
+						xmlns:s="library://ns.adobe.com/flex/spark" 
+						xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:reports="com.teamatec.verne.ui.elements.reports.*" xmlns:components="com.teamatec.verne.ui.components.*">
+	<fx:Declarations>
+		<mx:SeriesInterpolate id="seriesInterpolate" duration="1000" />
+		<mx:SeriesSlide id="seriesSlide" duration="1000" direction="right" />
+		<mx:SeriesZoom id="seriesZoom" duration="1000" />
+		<s:NumberFormatter id="money" groupingSeparator=","/>
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			import com.maclema.mysql.MySqlToken;
+			import com.maclema.mysql.ResultSet;
+			import com.teamatec.verne.models.FactorModel;
+			import com.teamatec.verne.models.SMSModel;
+			import com.teamatec.verne.ui.elements.ApplicationInterface;
+			import com.teamatec.verne.ui.popups.FactorsReportPopup;
+			
+			import mx.collections.ArrayCollection;
+			import mx.utils.StringUtil;
+			
+			[Bindable]
+			protected var daysFactors:ArrayCollection;
+			
+			[Bindable]
+			protected var totalSum:uint = 0;
+			
+			
+			protected var model:FactorModel;
+			
+			public override function buildReport():void
+			{
+				super.buildReport();
+				totalSum = 0;
+				
+				model = new FactorModel();
+				var sidebar:FactorsReportPopup = Verne.applicationInterface.factors.sidebar;
+				var splitedDate:Array = sidebar.startDate.text.split("/");
+				var startDate:Vector.<uint> = Converter.changeShToM(splitedDate[0],splitedDate[1],splitedDate[2]);
+				splitedDate = sidebar.endDate.text.split("/");
+				var endDate:Vector.<uint> = Converter.changeShToM(splitedDate[0],splitedDate[1],splitedDate[2]);
+				model.selectDateRangeCount(chartData, startDate.join("-"),endDate.join("-"), String(sidebar.type.selectedValue));
+				var sql:String = " WHERE creation_date < '"+endDate.join("-")+"' and creation_date > '"+startDate.join("-")+"'";
+				var type:String = String(sidebar.type.selectedValue);
+				if(type && type != "0" && type != "null")
+				{
+					sql += " and type="+type;
+				}
+				
+				/* if(sidebar.company_id.selectedIndex != -1)
+				{
+					sql += " and company_title='"+String(sidebar.company_id.selectedItem.label)+"'";
+				}
+				
+				if(sidebar.client_id.selectedIndex != -1)
+				{
+					sql += " and client_title='"+String(sidebar.client_id.selectedItem.label)+"'";
+				}
+				
+				trace(sql); */
+				
+				model.selectALL(selecteAllComplete,sql);
+				
+			}
+			
+			public function selecteAllComplete(data:ResultSet, token:MySqlToken):void
+			{
+				factors.dataProvider = data.getRows();
+				trace(factors.dataProvider);
+				var item:Object;
+				for(var i:uint = 0;i<factors.dataProvider.length;i++)
+				{
+					item = factors.dataProvider.getItemAt(i);
+					totalSum += item.total;
+				}
+			}
+			
+			public function chartData(data:ResultSet, token:MySqlToken):void
+			{
+				daysFactors = data.getRows();
+			}
+			
+			private function pieSeries_labelFunc(item:Object, field:String, index:Number, percentValue:Number):String {
+				return StringUtil.substitute("{0} ({1}%)",
+					"روز "+item.day,
+					percentValue.toFixed(1)+" - "+item.count);
+			}
+			
+		]]>
+	</fx:Script>
+	<s:VGroup width="100%" height="100%">
+		<components:PageHeader text="تعداد فاکتورها در هر روز" width="100%" padding="0"/>
+		<mx:PieChart id="pie" dataProvider="{daysFactors}" width="100%" height="200" layoutDirection="ltr">
+			<mx:series>
+				<mx:PieSeries
+					filters="{[]}"
+					field="count" 
+					nameField="day" 
+					labelPosition="callout"
+					showDataEffect="{seriesInterpolate}"
+					labelFunction="pieSeries_labelFunc"
+					/>
+			</mx:series>
+		</mx:PieChart>
+		<components:PageHeader text="فاکتور های موجود در بازه زمانی انتخاب شده" width="100%" padding="0"/>
+		<s:VGroup width="100%" gap="-1">
+			<s:HGroup width="100%" gap="-1" verticalAlign="contentJustify">
+				
+				<components:FlowItem id="index" text="ردیف" width="50" background="#eeeeee"/>
+				<components:FlowItem id="serial" text="سریال" width="100" background="#eeeeee"/>
+				<components:FlowItem id="title" align="justify" text="عنوان" width="100%" background="#eeeeee"/>
+				<components:FlowItem id="total" text="مجموع" width="100" background="#eeeeee"/>
+				
+			</s:HGroup>
+			<s:DataGroup id="factors" width="100%" itemRenderer="com.teamatec.verne.ui.renderers.FactorRenderer">
+				<s:layout>
+					<s:VerticalLayout gap="-1" horizontalAlign="contentJustify"/>
+				</s:layout>
+			</s:DataGroup>
+			<s:Group width="100%">
+				<s:Group right="0" width="271">
+					<s:Rect width="100%" height="100%">
+						<s:fill>
+							<s:BitmapFill id="bgFill" source="@Embed('resources/images/stripe.png')" fillMode="repeat" smooth="true" rotation="90"/>
+						</s:fill>
+						<s:stroke>
+							<s:SolidColorStroke color="#dddddd"/>
+						</s:stroke>
+					</s:Rect>
+					<s:RichText text="{'مجموع به ریال : '+ money.format(totalSum)}" fontSize="14" left="10" right="10" top="10" bottom="10" textAlign="center"/>
+				</s:Group>
+			</s:Group>
+		</s:VGroup>
+		
+	</s:VGroup>
+	
+</reports:AbstractReport>

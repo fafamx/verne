@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:GridItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					xmlns:s="library://ns.adobe.com/flex/spark" 
+					xmlns:mx="library://ns.adobe.com/flex/mx" clipAndEnableScrolling="true" dataChange="dataChangeHandler(event)" initialize="initializeHandler(event)">
+	
+	<fx:Script>
+		<![CDATA[
+			import mx.events.FlexEvent;
+			protected var status:Dictionary;
+			override public function prepare(hasBeenRecycled:Boolean):void {
+				
+			}
+			
+			protected function dataChangeHandler(event:FlexEvent):void
+			{
+				lblData.text = status[String(data[column.dataField])];
+			}
+			
+			protected function initializeHandler(event:FlexEvent):void
+			{
+				status = new Dictionary();
+				status["-1"] = "ارسال نشده";
+				status["0"] = "ارسال شده به مخابرات";
+				status["1"] = "رسیده به گوشی";
+				status["2"] = "نرسیده به گوشی";
+				status["4"] = "در صف ارسال";
+				status["8"] = "رسیده به مخابرات";
+				status["16"] = "نرسیده به مخابرات";
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:Label id="lblData" top="9" left="7"/>
+	
+</s:GridItemRenderer>

@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="utf-8"?>
+<forms:AbstractForm xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					xmlns:s="library://ns.adobe.com/flex/spark" 
+					xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:elements="com.teamatec.verne.ui.elements.*"
+					xmlns:forms="com.teamatec.verne.ui.elements.forms.*"
+					width="100%" height="100%" xmlns:components="com.teamatec.verne.ui.components.*" creationComplete="creationCompleteHandler(event)" xmlns:validators="com.teamatec.verne.validators.*">
+	
+	<fx:Script>
+		<![CDATA[
+			import com.greensock.TweenLite;
+			import com.greensock.TweenNano;
+			import com.maclema.mysql.MySqlToken;
+			import com.maclema.mysql.ResultSet;
+			import com.teamatec.utils.DateUtil;
+			import com.teamatec.utils.NumberUtil;
+			import com.teamatec.verne.models.*;
+			
+			import flash.utils.setTimeout;
+			
+			import mx.collections.ArrayCollection;
+			import mx.events.FlexEvent;
+			import mx.validators.Validator;
+			
+			import spark.events.TextOperationEvent;
+			
+			[Bindable]
+			public var selected:ArrayCollection;
+			
+			protected var serial:String;
+			protected var type:String;
+			protected var company_id:String;
+			protected var found_client:String;
+			protected var basicData:ArrayCollection;
+			
+			protected function submit_clickHandler(event:MouseEvent):void
+			{
+				cleanSummery();
+				var validationResult:Array = Validator.validateAll([titleValidation]);
+				TweenNano.to(message,.5,{alpha:0});
+				if(validationResult.length == 0)
+				{
+					submit.enabled = false;
+					
+					var dbData:Array = [title.text];
+					if(updateData)
+					{
+						model.update(dbData,"factor_id = "+updateData.factor_id);
+					}
+					else
+					{
+						if(found_client)
+						{
+							addFactor(found_client);
+						}
+						else
+						{
+							var clients:ClientModel = new ClientModel();
+							clients.insert([title.text,"",telephone.text,"","","","","",address.text,"","","",""]);
+							clients.lastInsertedId(function(data:ResultSet, token:*):void
+							{
+								var client_id:String = data.getRows()[0].last;
+								addFactor(client_id);
+							},"client_id");
+							//model.insert(dbData);
+						}
+					}
+					model.addEventListener(Event.COMPLETE,storeComplete);
+				}
+			}
+			
+			protected function addFactor(client_id:String):void
+			{
+				model.insert([type,"فاکتور فروش","",company_id,client_id,serial,DateUtil.getMySQLDate(new Date()),"0","1","",NumberUtil.internationalizeNumbers(totalDiscount.text),NumberUtil.internationalizeNumbers(totalTax.text)]);
+				model.lastInsertedId(function(data:ResultSet, token:*):void
+				{
+					var factor_id:String = data.getRows()[0].last;
+					var factorItems:ItemsModel;
+					var item:Object;
+					var sequence:SequenceModel = new SequenceModel();
+					sequence.plusPlus(type);
+					for(var i:uint = 0;i<selected.length;i++)
+					{
+						item = selected.getItemAt(i);
+						factorItems = new ItemsModel();
+						var price:Number = item.sell_price;
+						var taxValue:Number = price*Number(NumberUtil.internationalizeNumbers(tax.text))/100
+						var discountValue:Number = price*Number(NumberUtil.internationalizeNumbers(discount.text))/100;
+						factorItems.insert([factor_id,item.product_id,"",item.storage,taxValue*Number(item.storage),discountValue*Number(item.storage)]);
+					}
+				},"factor_id");
+			}
+			
+			protected function cleanSummery():void
+			{
+				TweenLite.to(summery,.5,{alpha:0});
+				summery.removeAllElements();
+			}
+			
+			protected function showSummery():void
+			{
+				TweenLite.to(summery,.5,{alpha:1});
+			}
+			
+			protected function storeComplete(event:Event):void
+			{
+				TweenNano.to(message,.5,{alpha:1});
+				submit.enabled = true;
+				Verne.applicationInterface.view["fastPrint"] = true;
+				Verne.applicationInterface.view.currentState = "grid";
+				Verne.applicationInterface.view.selectData();
+			}
+			
+			public override function creationCompleteHandler(event:FlexEvent):void
+			{
+				model = new FactorModel();
+				clean();
+				if(updateData)
+				{
+					updateAction();
+				}
+				
+				var productModel:ProductModel = new ProductModel();
+				productModel.selectALL(productsSelected);
+				
+				var sequence:SequenceModel = new SequenceModel();
+				sequence.selectALL(sequenceCountComplete," WHERE title='فاکتور فروش'");
+				
+				var clients:ClientModel = new ClientModel();
+				clients.selectALL(function(data:ResultSet, token:*):void
+				{
+					company_id = data.getRows()[0].client_id;
+				}," limit 1");
+				
+				products.dataProvider = null;
+			}
+			
+			protected function productsSelected(data:ResultSet, token:*):void
+			{
+				var items:ArrayCollection = data.getRows();
+				var item:Object;
+				var button:IconButton;
+				selected = new ArrayCollection();
+				basicData = data.getRows();
+				products.dataProvider = basicData;
+			}
+			
+			public function updateAction():void
+			{
+				title.text = updateData.title;
+			}
+			
+			public override function clean():void
+			{
+				super.clean();
+				title.text = "";
+				tax.text = "0";
+				discount.text = "0";
+				productName.text = "";
+				telephone.text = "";
+				address.text = "";
+				totalDiscount.text = "0";
+				totalTax.text = "0";
+			}
+			
+			protected function sequenceCountComplete(data:ResultSet, token:*):void
+			{
+				var item:Object = data.getRows()[0];
+				serial = String(item.value + 1);
+				type = item.sequence_id;
+			}
+			
+			protected function title_changeHandler(event:TextOperationEvent):void
+			{
+				var clients:ClientModel = new ClientModel();
+				clients.selectALL(function(data:ResultSet, token:*):void
+				{
+					if(data.getRows().length > 0)
+					{
+						found_client = data.getRows()[0].client_id;
+						address.text = data.getRows()[0].address;
+						telephone.text = data.getRows()[0].phone;
+						
+						address.enabled = false;
+						telephone.enabled = false;
+					}
+					else
+					{
+						found_client = null;
+						address.text = "";
+						telephone.text = "";
+						
+						address.enabled = true;
+						telephone.enabled = true;
+					}
+				}," where title='"+title.text+"'");
+			}
+			
+			protected function productName_changeHandler(event:TextOperationEvent):void
+			{
+				var dataProvider:ArrayCollection = new ArrayCollection();
+				var item:Object;
+				for(var i:uint = 0;i<basicData.length;i++)
+				{
+					item = basicData.getItemAt(i);
+					if(String(item.title).indexOf(NumberUtil.internationalizeNumbers(productName.text))!= -1)
+					{
+						dataProvider.addItem(item);
+					}
+				}
+				products.dataProvider = dataProvider;
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<mx:StringValidator id="titleValidation" source="{title}" property="text" required="true" requiredFieldError="مقدار این فیلد اجباری می باشد."/>
+	</fx:Declarations>
+	<s:Form id="form" width="100%" height="100%" minWidth="550">
+		<s:FormHeading width="100%" label="فرم صدور سریع فاکتور"/>
+		
+		<s:FormItem label="نام مشتری" width="100%">
+			<s:TextInput id="title" width="250" change="title_changeHandler(event)"/>
+		</s:FormItem>
+		
+		<s:FormItem label="تلفن" width="100%">
+			<s:TextInput id="telephone" width="250"/>
+		</s:FormItem>
+		
+		<s:FormItem label="آدرس" width="100%">
+			<s:TextArea id="address" width="450" height="100"/>
+		</s:FormItem>
+		
+		<s:FormItem label="انتخاب کالا" width="100%">
+			<s:TextInput id="productName" width="250" change="productName_changeHandler(event)"/>
+			<s:List id="products" width="100%" itemRenderer="com.teamatec.verne.ui.renderers.TouchProductRenderer" contentBackgroundAlpha="0" borderVisible="false">
+				<s:layout>
+					<s:HorizontalLayout/>
+				</s:layout>
+			</s:List>
+		</s:FormItem>
+		<s:FormItem label="کالا های انتخاب شده" width="100%">
+			<s:List id="selectedProducts" width="100%" itemRenderer="com.teamatec.verne.ui.renderers.TouchProductRenderer" contentBackgroundAlpha="0" borderVisible="false" dataProvider="{selected}">
+				<s:layout>
+					<s:HorizontalLayout/>
+				</s:layout>
+			</s:List>
+		</s:FormItem>
+		
+		<s:FormItem label="درصد مالیات" width="100%">
+			<s:TextInput id="tax" width="100" textAlign="center" text="0" direction="ltr"/>
+		</s:FormItem>
+		<s:FormItem label="درصد تخفیف" width="100%">
+			<s:TextInput id="discount" width="100" textAlign="center" text="0" direction="ltr"/>
+		</s:FormItem>
+		
+		<s:FormItem label="مالیات کل" width="100%">
+			<s:TextInput id="totalTax" width="100" textAlign="center" text="0" direction="ltr"/>
+		</s:FormItem>
+		<s:FormItem label="تخفیف کل" width="100%">
+			<s:TextInput id="totalDiscount" width="100" textAlign="center" text="0" direction="ltr"/>
+		</s:FormItem>
+		
+		<s:FormItem width="100%">
+			<s:layout>
+				<s:HorizontalLayout verticalAlign="middle"/>
+			</s:layout>
+			<components:IconButton id="submit" label="ذخیره اطلاعات" click="submit_clickHandler(event)"/>
+			<s:Label id="message" text="اطلاعات با موفقیت در بانک اطلاعاتی ذخیره شد." color="0x728e00" alpha="0">
+				<s:filters>
+					<s:DropShadowFilter distance="1" quality="3" blurX="0" blurY="0" color="0xffffff"/>
+				</s:filters>
+			</s:Label>
+		</s:FormItem>
+		<s:FormItem id="summery" width="100%" styleName="validation" alpha="0">
+		</s:FormItem>
+	</s:Form>
+</forms:AbstractForm>

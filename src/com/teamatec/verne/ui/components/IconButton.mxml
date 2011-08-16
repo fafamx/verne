@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" buttonMode="true">
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			public function set label(value:String):void
+			{
+				labelDisplay.text = value;
+			}
+			
+			public function get label():String
+			{
+				return labelDisplay.text;
+			}
+			
+			public function set smallLabel(value:String):void
+			{
+				smallLabelDisplay.setStyle("paddingLeft",10);
+				smallLabelDisplay.text = value;
+			}
+			
+			public function get smallLabel():String
+			{
+				return smallLabelDisplay.text;
+			}
+		]]>
+	</fx:Script>
+	<!--- @private -->
+	<s:Rect top="0" bottom="0" left="0" right="0">
+		<s:fill>
+			<s:SolidColor color="0xeeeeee"/>
+		</s:fill>
+	</s:Rect>
+	<s:Rect top="1" bottom="1" left="1" right="1">
+		<s:fill>
+			<s:SolidColor color="0x929292"/>
+		</s:fill>
+	</s:Rect>
+	<s:Rect top="2" bottom="2" left="2" right="2">
+		<s:fill>
+			<s:LinearGradient rotation="90">
+				<s:GradientEntry color="0xe0e0e0"/>
+				<s:GradientEntry color="0xcdcece"/>
+			</s:LinearGradient>
+		</s:fill>
+	</s:Rect>
+	<s:HGroup width="100%" height="100%" horizontalAlign="center" verticalAlign="middle" gap="0">
+		<!--- @private -->
+		<s:Label id="labelDisplay" paddingBottom="10" paddingLeft="10" paddingRight="10" paddingTop="10" horizontalCenter="0" verticalCenter="0">
+			<s:filters>
+				<s:DropShadowFilter distance="1" quality="3" blurX="0" blurY="0" color="0xffffff"/>
+			</s:filters>
+		</s:Label>
+		<s:Label id="smallLabelDisplay" horizontalCenter="0" verticalCenter="0" color="0x333333" fontSize="10">
+			<s:filters>
+				<s:DropShadowFilter distance="1" quality="3" blurX="0" blurY="0" color="0xffffff"/>
+			</s:filters>
+		</s:Label>
+	</s:HGroup>
+</s:Group>

@@ -1,0 +1,301 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" width="100%" height="100%" xmlns:elements="com.teamatec.verne.ui.elements.*" xmlns:forms="com.teamatec.verne.ui.elements.forms.*" xmlns:grids="com.teamatec.verne.ui.elements.grids.*" xmlns:templates="com.teamatec.verne.ui.templates.*" xmlns:components="com.teamatec.verne.ui.components.*" creationComplete="creationCompleteHandler(event)" initialize="initializeHandler(event)" xmlns:popups="com.teamatec.verne.ui.popups.*">
+	
+	<fx:Script>
+		<![CDATA[
+			import com.demonsters.debugger.MonsterDebugger;
+			import com.greensock.TweenMax;
+			import com.teamatec.verne.models.SMSModel;
+			import com.teamatec.verne.ui.elements.grids.AbstractGrid;
+			import com.teamatec.verne.ui.elements.grids.ClientsGrid;
+			import com.teamatec.verne.ui.elements.grids.ProductsGrid;
+			
+			import flash.utils.setInterval;
+			import flash.utils.setTimeout;
+			
+			import mx.collections.ArrayCollection;
+			import mx.events.FlexEvent;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.soap.WebService;
+			import mx.utils.Base64Encoder;
+			
+			public var view:AbstractGrid;
+			public static var smsGateway:mx.rpc.soap.WebService;
+			public static var tokenToItem:Dictionary;
+			protected var smsModel:SMSModel;
+			protected var isMouseDown:Boolean = false;
+			protected var downPoint:Point;
+			
+			[Bindable]
+			public static var que:ArrayCollection;
+			
+			protected function form_clickHandler(event:MouseEvent):void
+			{
+				view.currentState = "form";
+				view["form"].clean();
+			}
+			
+			protected function grid_clickHandler(event:MouseEvent):void
+			{
+				view.currentState = "grid";
+				view.selectData();
+			}
+			
+			protected function creationCompleteHandler(event:FlexEvent):void
+			{
+				var buttonItems:ArrayCollection = new ArrayCollection();
+				
+				buttonItems.addItem({id:"clients",label:"مشتریان",icon:"resources/images/clients.png"});
+				buttonItems.addItem({id:"categories",label:"دسته بندی",icon:"resources/images/category.png"});
+				buttonItems.addItem({id:"sms",label:"پیام کوتاه",icon:"resources/images/message.png"});
+				if(Verne.config.modules.accounting.text() == "true")
+				{
+					buttonItems.addItem({id:"products",label:"محصولات و خدمات",icon:"resources/images/products.png"});
+					buttonItems.addItem({id:"sequences",label:"مجموعه ها",icon:"resources/images/sequences.png"});
+					buttonItems.addItem({id:"factors",label:"فاکتور ها",icon:"resources/images/factors.png"});
+				}
+				buttonItems.getItemAt(0).last = true
+				
+				toolbar.buttons.dataProvider = buttonItems;
+				toolbar.buttons.addEventListener(Event.CHANGE,changeHandler);
+				toolbar.buttons.buttons.selectedIndex = 0;
+				toolbar.buttons.dispatchEvent(new Event(Event.CHANGE));
+				stage.addEventListener(MouseEvent.MOUSE_UP,wrapper_mouseUpHandler);
+			}
+			
+			protected function changeHandler(event:Event):void
+			{
+				var item:String = toolbar.buttons.buttons.selectedItem.id;
+				
+				currentState = item;
+				view = this[item];
+				
+				if(view.hasState("report"))
+				{
+					 TweenMax.to(report,.5,{autoAlpha:1});
+					 report.mouseEnabled = true;
+					 report.mouseChildren = true;
+				}
+				else
+				{
+					TweenMax.to(report,.5,{autoAlpha:.5});
+					report.mouseEnabled = false;
+					report.mouseChildren = false;
+				}
+				
+				view.alpha = 0;
+				view.fadeIn.play();
+			}
+			
+			protected function setupSMS():void
+			{
+				smsGateway = smsService;
+				smsGateway.wsdl = Verne.config.sms.wsdl.text();
+				var encoder:Base64Encoder = new Base64Encoder();
+				encoder.insertNewLines = false;
+				encoder.encode(Verne.config.sms.username.text()+":"+Verne.config.sms.password.text());
+				
+				smsGateway.httpHeaders = {Authorization:"Basic " + encoder.toString()};
+				smsModel = new SMSModel();
+				que = new ArrayCollection();
+				setInterval(smsModel.sync,10000);
+			}
+			
+			protected function initializeHandler(event:FlexEvent):void
+			{
+				if(Verne.config.sms.isEnable.toString() == "true")
+				{
+					setupSMS();
+				}
+				else
+				{
+					MonsterDebugger.log("SMS Disabled");
+				}
+			}
+			
+			protected function smsResult(event:ResultEvent):void
+			{
+				MonsterDebugger.trace(this,event);
+				try
+				{
+					var result:XML = XML(event.result);
+					var tokenCode:String = result.children()[0].text();
+					smsModel.updateToken(tokenToItem[event.token].sms_id,tokenCode);
+					trace("Sent : "+tokenCode);
+					
+					if(currentState == "sms" && sms.currentState == "grid")
+					{
+						sms.selectData();
+					}
+				} 
+				catch(error:Error) 
+				{
+					trace(error);
+				}
+				
+			}
+			
+			protected function smsFault(event:FaultEvent):void
+			{
+				MonsterDebugger.trace(this,event);
+			}
+			
+			protected function deliveryResult(event:ResultEvent):void
+			{
+				var result:XML = XML(event.result[0])
+				var resultXML:XML = result.children()[0];
+				MonsterDebugger.trace(this,event);
+				try
+				{
+					var status:String = resultXML.text();
+					if(status)
+					{
+						smsModel.updateStatus(tokenToItem[event.token].token,status);
+						MonsterDebugger.log("Token : "+tokenToItem[event.token].token,"Status : "+status);
+					}
+					else
+					{
+						
+					}
+				} 
+				catch(error:Error) 
+				{
+					MonsterDebugger.log(error,result);
+				}
+				if(currentState == "sms" && sms.currentState == "grid")
+				{
+					sms.selectData();
+				}
+			}
+			
+			protected function smsService_faultHandler(event:FaultEvent):void
+			{
+				// TODO Auto-generated method stub
+				
+			}
+			
+			protected function report_clickHandler(event:MouseEvent):void
+			{
+				if(view.hasState("report"))
+				{
+					view.currentState = "report";
+					view["report"].buildReport();
+				}
+			}
+			
+			protected function factor_clickHandler(event:MouseEvent):void
+			{
+				currentState = "factors";
+				view = factors;
+				view.currentState = "fastForm";
+				setTimeout(function():void
+				{
+					factors.fastForm.creationCompleteHandler(null);
+				},100);
+			}
+			
+			protected function wrapper_mouseDownHandler(event:MouseEvent):void
+			{
+				downPoint = new Point(mouseX,mouseY);
+				isMouseDown = true;
+			}
+			
+			protected function wrapper_mouseUpHandler(event:MouseEvent):void
+			{
+				isMouseDown = false;
+			}
+			
+			protected function wrapper_mouseMoveHandler(event:MouseEvent):void
+			{
+				if(isMouseDown)
+				{
+					var dif:Point = new Point();
+					dif.x = downPoint.x - mouseX;
+					dif.y = downPoint.y - mouseY;
+					wrapper.horizontalScrollBar.value -= (dif.x / 30);
+					wrapper.verticalScrollBar.value -= (dif.y / 30);
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<s:WebService id="smsService" fault="smsService_faultHandler(event)">
+			<s:operation name="send"
+						 resultFormat="xml"
+						 result="smsResult(event)"
+						 fault="smsFault(event)"
+						 />
+			<s:operation name="deliveryStatus"
+						 resultFormat="xml"
+						 result="deliveryResult(event)"
+						 fault="smsFault(event)"/>
+		</s:WebService>
+		<mx:SeriesInterpolate id="seriesInterpolate" duration="1000" />
+		<mx:SeriesSlide id="seriesSlide" duration="1000" direction="right" />
+		<mx:SeriesZoom id="seriesZoom" duration="1000" />
+	</fx:Declarations>
+	<s:states>
+		<s:State name="clients"/>
+		<s:State name="products"/>
+		<s:State name="sms"/>
+		<s:State name="sequences"/>
+		<s:State name="factors"/>
+		<s:State name="categories"/>
+	</s:states>
+	<s:Rect width="100%" height="100%">
+		<s:fill>
+			<s:SolidColor color="0xd9d9d9"/>
+		</s:fill>
+	</s:Rect>
+	<elements:ApplicationTopBar id="toolbar" tabChildren="false"/>
+	<mx:HDividedBox left="10" top="50" bottom="10" right="10">
+		<s:Group width="100%" height="100%">
+			<s:Rect left="0" right="0" bottom="0" top="0">
+				<s:fill>
+					<s:SolidColor color="0xefeeee"/>
+				</s:fill>
+			</s:Rect>
+			<s:Rect left="1" right="1" bottom="1" top="1">
+				<s:fill>
+					<s:SolidColor color="0x919191"/>
+				</s:fill>
+			</s:Rect>
+			<s:Rect left="2" right="2" bottom="2" top="2">
+				<s:fill>
+					<s:SolidColor color="0xf9f9f9"/>
+				</s:fill>
+			</s:Rect>
+			<s:Scroller id="wrapper" left="5" right="5" bottom="5" top="5" minViewportInset="1" 
+				mouseDown="wrapper_mouseDownHandler(event)"
+				mouseUp="wrapper_mouseUpHandler(event)"
+				mouseMove="wrapper_mouseMoveHandler(event)">
+				<s:Group id="content" width="100%" height="100%" clipAndEnableScrolling="true">
+					<grids:ClientsGrid id="clients" includeIn="clients"/>
+					<grids:CategoriesGrid id="categories" includeIn="categories"/>
+					<grids:ProductsGrid id="products" includeIn="products"/>
+					<grids:SMSGrid id="sms" includeIn="sms"/>
+					<grids:FactorsGrid id="factors" includeIn="factors"/>
+					<grids:SequencesGrid id="sequences" includeIn="sequences"/>
+				</s:Group>
+			</s:Scroller>
+		</s:Group>
+		<s:Group width="200" height="100%">
+			<s:Scroller left="5" right="5" bottom="5" top="5" minViewportInset="1">
+				<s:Group id="side" width="100%" height="100%" clipAndEnableScrolling="true">
+					<s:VGroup id="navigation" width="100%" height="100%" horizontalAlign="contentJustify">
+						<components:IconButton id="factor" label="صدور سریع فاکتور" click="factor_clickHandler(event)"/>
+						<components:IconButton id="form" label="نمایش فرم - جدید" click="form_clickHandler(event)"/>
+						<components:IconButton id="grid" label="نمایش فهرست" click="grid_clickHandler(event)"/>
+						<components:IconButton id="report" label="نمایش گزارشات" click="report_clickHandler(event)"/>
+						
+					</s:VGroup>
+				</s:Group>
+			</s:Scroller>
+		</s:Group>
+	</mx:HDividedBox>
+	<popups:ConfirmPopup id="deleteConfirm" verticalCenter="0" horizontalCenter="0" visible="false" alpha="0"/>
+</s:Group>

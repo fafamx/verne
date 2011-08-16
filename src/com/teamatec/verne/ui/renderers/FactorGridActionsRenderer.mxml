@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<renderers:GridActionsRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+							   xmlns:s="library://ns.adobe.com/flex/spark" 
+							   xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:renderers="com.teamatec.verne.ui.renderers.*" dataChange="gridactionsrenderer1_dataChangeHandler(event)">
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			import com.greensock.TweenMax;
+			import com.maclema.mysql.MySqlToken;
+			import com.maclema.mysql.ResultSet;
+			import com.teamatec.verne.models.ItemsModel;
+			import com.teamatec.verne.models.ProductModel;
+			import com.teamatec.verne.ui.elements.AbstractView;
+			import com.teamatec.verne.ui.elements.grids.AbstractGrid;
+			
+			import mx.collections.ArrayCollection;
+			import mx.events.FlexEvent;
+			protected override function deleteButton_clickHandler(event:MouseEvent):void
+			{
+				abstractGrid = AbstractView.gridToAbstract[grid.dataGrid];
+				if(abstractGrid && abstractGrid.model)
+				{
+					deleteConfirmed = true;
+					Verne.applicationInterface.deleteConfirm.grid = abstractGrid;
+					Verne.applicationInterface.deleteConfirm.renderer = this;
+					TweenMax.to(Verne.applicationInterface.deleteConfirm,.5,{autoAlpha:1});
+				}
+			}
+			
+			public override function doRemove(abstractGrid:AbstractGrid):void
+			{
+				if(abstractGrid && abstractGrid.model)
+				{
+					var id:String = data[column.dataField];
+					var itemsModel:ItemsModel = new ItemsModel();
+					itemsModel.selectALL(allProducts," WHERE factor_id = "+id);
+					super.doRemove(abstractGrid);
+					abstractGrid.selectData();
+				}
+			}
+			
+			protected function allProducts(data:ResultSet, token:MySqlToken):void
+			{
+				var items:ArrayCollection = data.getRows();
+				var productModel:ProductModel = new ProductModel();
+				var item:Object;
+				var itemsModel:ItemsModel = new ItemsModel();
+				for(var i:uint = 0;i<items.length;i++)
+				{
+					item = items.getItemAt(i);
+					productModel.addStorage(item.count,item.product_id);
+					itemsModel.deleteRows("item_id = "+item.item_id);
+				}
+				
+			}
+			
+			protected function gridactionsrenderer1_dataChangeHandler(event:FlexEvent):void
+			{
+				if(rowIndex != 0)
+				{
+					deleteButton.visible = false;
+				}
+				else
+				{
+					deleteButton.visible = true;
+				}
+			}
+			
+		]]>
+	</fx:Script>
+</renderers:GridActionsRenderer>

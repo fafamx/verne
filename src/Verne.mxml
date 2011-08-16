@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:WindowedApplication xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					   xmlns:s="library://ns.adobe.com/flex/spark" 
+					   xmlns:mx="library://ns.adobe.com/flex/mx"
+					   frameRate="40"
+					   backgroundColor="0xffffff"
+					   layoutDirection="rtl"
+					   direction="rtl"
+					   creationComplete="creationCompleteHandler(event)" xmlns:elements="com.teamatec.verne.ui.elements.*">
+	<fx:Script>
+		<![CDATA[
+			import com.demonsters.debugger.MonsterDebugger;
+			import com.maclema.mysql.Connection;
+			import com.teamatec.utils.GarbageCollector;
+			import com.teamatec.verne.models.AbstractModel;
+			import com.teamatec.verne.ui.elements.ApplicationInterface;
+			
+			import mx.events.FlexEvent;	
+			
+			public static var me:Verne;
+			public static var connection:Connection;
+			public static var config:XML;
+			protected var resources:String = "resources/";
+			protected var configFile:String = "config/config.xml";
+			protected var finalConfig:File;
+			protected var baseConfig:File;
+			
+			public static var applicationInterface:ApplicationInterface;
+			
+			protected function creationCompleteHandler(event:FlexEvent):void
+			{
+				addEventListener(Event.ADDED_TO_STAGE,addedToStageHandler);
+			}
+			
+			protected function addedToStageHandler(event:Event):void
+			{
+				nativeWindow.maximize();
+				initializeApplication();
+				MonsterDebugger.initialize(stage);
+			}
+			
+			protected function initializeApplication():void
+			{
+				isConfigExists();
+				loadConfig();
+			}
+			
+			protected function loadConfig():void
+			{
+				var loader:URLLoader = new URLLoader();
+				var request:URLRequest = new URLRequest(finalConfig.url);
+				loader.load(request);
+				loader.addEventListener(Event.COMPLETE,configComplete);
+			}
+			
+			protected function configComplete(event:Event):void
+			{
+				var loader:URLLoader = event.target as URLLoader;
+				config = XML(loader.data);
+				loader.removeEventListener(Event.COMPLETE,configComplete);
+				loader = null;
+				GarbageCollector.gc();
+				initializeDatabase();
+			}
+			
+			protected function initializeDatabase():void
+			{
+				connection = new Connection(config.database.server,config.database.port,config.database.username,config.database.password,config.database.name);
+				connection.addEventListener(Event.CONNECT, connectionComplete);
+				connection.connect();
+			}
+			
+			protected function connectionComplete(event:Event):void
+			{
+				AbstractModel.connection = connection;
+				applicationInterface = new ApplicationInterface();
+				applicationInterface.percentWidth = 100;
+				applicationInterface.percentHeight = 100;
+				applicationInterface.clipAndEnableScrolling = true;
+				addElement(applicationInterface);
+			}
+			
+			protected function isConfigExists():void
+			{
+				finalConfig = File.applicationStorageDirectory;
+				finalConfig = finalConfig.resolvePath(configFile);
+				trace(finalConfig.nativePath);
+				if(!finalConfig.exists)
+				{
+					baseConfig = File.applicationDirectory.resolvePath(resources+configFile);
+					baseConfig.copyTo(finalConfig);
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Style source="resources/style/style.css"/>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<mx:ProgressBar width="200" verticalCenter="0" horizontalCenter="0" label="در حال اتصال با بانک اطلاعاتی" indeterminate="true" labelPlacement="center" fontSize="9" height="20"/>
+</s:WindowedApplication>

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx">
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			import mx.collections.IList;
+			
+			import spark.components.supportClasses.ItemRenderer;
+			import spark.events.IndexChangeEvent;
+			public function set dataProvider(value:IList):void
+			{
+				buttons.dataProvider = value;
+			}
+			
+			
+			protected function buttons_clickHandler(event:MouseEvent):void
+			{
+				var item:ItemRenderer = event.target as ItemRenderer;
+				dispatchEvent(new Event(Event.CHANGE));
+			}
+			
+		]]>
+	</fx:Script>
+	<s:Rect top="0" bottom="0" left="0" right="0">
+		<s:fill>
+			<s:SolidColor color="0xeeeeee"/>
+		</s:fill>
+	</s:Rect>
+	<s:Rect top="1" bottom="1" left="1" right="1">
+		<s:fill>
+			<s:SolidColor color="0x929292"/>
+		</s:fill>
+	</s:Rect>
+	<s:Rect top="2" bottom="2" left="2" right="2">
+		<s:fill>
+			<s:LinearGradient rotation="90">
+				<s:GradientEntry color="0xe0e0e0"/>
+				<s:GradientEntry color="0xcdcece"/>
+			</s:LinearGradient>
+		</s:fill>
+	</s:Rect>
+	<!--- @private -->
+	<s:List id="buttons" click="buttons_clickHandler(event)" contentBackgroundAlpha="0" borderVisible="false" top="2" right="2" bottom="2" left="2" itemRenderer="com.teamatec.verne.ui.renderers.ButtonGroupItem" minWidth="0">
+		<s:layout>
+			<s:HorizontalLayout gap="0" />
+		</s:layout>
+		<s:dataProvider>
+			<s:ArrayCollection>
+				<fx:Object label="انبار"/>
+				<fx:Object label="اسناد"/>
+				<fx:Object label="مشتریان"/>
+				<fx:Object label="گزارشات"/>
+				<fx:Object label="کاربران"/>
+				<fx:Object label="تنظیمات"/>
+			</s:ArrayCollection>
+		</s:dataProvider>
+	</s:List>
+</s:Group>

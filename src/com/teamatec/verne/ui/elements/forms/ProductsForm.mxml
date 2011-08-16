@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="utf-8"?>
+<forms:AbstractForm xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					   xmlns:s="library://ns.adobe.com/flex/spark" 
+					   xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:elements="com.teamatec.verne.ui.elements.*"
+					   xmlns:forms="com.teamatec.verne.ui.elements.forms.*"
+					   width="100%" height="100%" xmlns:components="com.teamatec.verne.ui.components.*" creationComplete="creationCompleteHandler(event)" xmlns:validators="com.teamatec.verne.validators.*">
+	
+	<fx:Script>
+		<![CDATA[
+			import com.greensock.TweenLite;
+			import com.greensock.TweenNano;
+			import com.maclema.mysql.MySqlToken;
+			import com.maclema.mysql.ResultSet;
+			import com.teamatec.verne.models.ProductModel;
+			
+			import mx.events.FlexEvent;
+			import mx.validators.Validator;
+			
+			import spark.events.TextOperationEvent;
+			
+			protected function submit_clickHandler(event:MouseEvent):void
+			{
+				cleanSummery();
+				var validationResult:Array = Validator.validateAll([titleValidation,storageValidation]);
+				TweenNano.to(message,.5,{alpha:0});
+				if(validationResult.length == 0)
+				{
+					submit.enabled = false;
+					var rule:String = "sku LIKE '"+sku.text+"'";
+					if(updateData && updateData.product_id)
+					{
+						rule += " and product_id NOT LIKE "+updateData.product_id;
+					}
+					model.isUnique(rule, skuValidationResult);
+				}
+			}
+			
+			protected function cleanSummery():void
+			{
+				TweenLite.to(summery,.5,{alpha:0});
+				summery.removeAllElements();
+			}
+			
+			protected function showSummery():void
+			{
+				TweenLite.to(summery,.5,{alpha:1});
+			}
+			
+			protected function storeComplete(event:Event):void
+			{
+				TweenNano.to(message,.5,{alpha:1});
+				submit.enabled = true;
+				if(updateData)
+				{
+					currentView.currentState = "grid";
+					currentView.selectData();
+				}
+			}
+			
+			protected function skuValidationResult(data:ResultSet, token:MySqlToken):void
+			{
+				if(data.getRows()[0].result_count == 0 || sku.text.length == 0)
+				{
+					var dbData:Array = [title.text,description.text,sku.text,barcode.text,storage.text,buyPrice.text,sellPrice.text,unit.text,product.source];
+					if(updateData)
+					{
+						model.update(dbData,"product_id = "+updateData.product_id);
+					}
+					else
+					{
+						model.insert(dbData);
+					}
+					model.addEventListener(Event.COMPLETE,storeComplete);
+				}
+				else
+				{
+					showSummery();
+					submit.enabled = true;
+					var label:Label = new Label();
+					label.text = 1+'. '+"کد کالا تکراری می باشد.";
+					summery.addElement(label);
+				}
+			}
+			
+			public override function creationCompleteHandler(event:FlexEvent):void
+			{
+				model = new ProductModel();
+				if(updateData)
+				{
+					updateAction();
+				}
+			}
+			
+			public function updateAction():void
+			{
+				title.text = updateData.title;
+				description.text = updateData.description;
+				sku.text = updateData.sku;
+				barcode.text = updateData.barCode;
+				storage.text = updateData.storage;
+				buyPrice.text = updateData.buy_price;
+				sellPrice.text = updateData.sell_price;
+				unit.text = updateData.unit;
+				product.source = null;
+				product.source = String(updateData.photo);
+			}
+			
+			public override function clean():void
+			{
+				title.text = "";
+				description.text = "";
+				sku.text = "";
+				barcode.text = "";
+				storage.text = "";
+				buyPrice.text = "";
+				sellPrice.text = "";
+				unit.text = "";
+				product.source = null;
+				super.clean();
+			}
+			
+			protected function browse_clickHandler(event:MouseEvent):void
+			{
+				var file:File = new File();
+				file.browse();
+				file.addEventListener(Event.SELECT,imageSelected);
+			}
+			
+			protected function imageSelected(event:Event):void
+			{
+				var file:File = event.target as File;
+				isPictureExists();
+				var copy:File = File.applicationStorageDirectory.resolvePath("products/"+file.name);
+				file.copyTo(copy,true);
+				product.source = String(copy.url);
+			}
+			
+			protected function isPictureExists():void
+			{
+				var folder:File = File.applicationStorageDirectory;
+				folder = folder.resolvePath("products/");
+				if(!folder.exists)
+				{
+					folder.createDirectory();
+				}
+			}
+			
+			protected function removeImage_clickHandler(event:MouseEvent):void
+			{
+				product.source = null;
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<mx:StringValidator id="titleValidation" source="{title}" property="text" required="true" requiredFieldError="مقدار این فیلد اجباری می باشد."/>
+		<s:NumberValidator id="storageValidation" source="{storage}" property="text" required="true" requiredFieldError="مقدار این فیلد اجباری می باشد."/>
+	</fx:Declarations>
+	<s:Form id="form" width="100%" height="100%" minWidth="550">
+		<s:FormHeading width="100%" label="فرم ثبت کالا و خدمات"/>
+		<s:FormItem label="نام کالا یا خدمات" width="100%">
+			<s:TextInput id="title" width="250"/>
+		</s:FormItem>
+		<s:FormItem label="توضیحات" width="100%">
+			<s:TextArea id="description" width="450" height="100"/>
+		</s:FormItem>
+		<s:FormItem label="کد انبار" width="100%">
+			<s:layout>
+				<s:HorizontalLayout verticalAlign="middle"/>
+			</s:layout>
+			<s:TextInput id="sku" direction="ltr" textAlign="center"/>
+			<s:helpContent>
+				<s:Label id="skuHelp" text="کد یکتا کالا برای شناسایی در انبار"/>
+			</s:helpContent>
+		</s:FormItem>
+		<s:FormItem label="بار کد" width="100%">
+			<s:TextInput id="barcode" direction="ltr" textAlign="center" restrict="0-9"/>
+			<s:helpContent>
+				<s:Label text="بارکد یکتا کالا"/>
+			</s:helpContent>
+		</s:FormItem>
+		<s:FormItem label="موجودی" width="100%">
+			<s:TextInput id="storage" direction="ltr" textAlign="center" restrict="0-9" text="0" width="70" />
+			<s:helpContent>
+				<s:Label text="-۱ بیانگر تعداد نامحدود می باشد."/>
+			</s:helpContent>
+		</s:FormItem>
+		<s:FormItem label="قیمت خرید" width="100%">
+			<s:TextInput id="buyPrice" direction="ltr" textAlign="center" restrict="0-9"/>
+		</s:FormItem>
+		<s:FormItem label="واحد" width="100%">
+			<s:TextInput id="unit" textAlign="center"/>
+		</s:FormItem>
+		<s:FormItem label="قیمت فروش" width="100%">
+			<s:TextInput id="sellPrice" direction="ltr" textAlign="center" restrict="0-9"/>
+		</s:FormItem>
+		<s:FormItem label="تصویر مرتبط" width="100%">
+			<s:layout>
+				<s:HorizontalLayout verticalAlign="middle"/>
+			</s:layout>
+			<s:VGroup>
+				<components:IconButton label="انتخاب تصویر" id="browse" click="browse_clickHandler(event)"/>
+				<components:IconButton label="حذف تصویر" id="removeImage" click="removeImage_clickHandler(event)"/>
+			</s:VGroup>
+			<s:Image id="product" width="128" height="128" fillMode="scale" smooth="true" smoothingQuality="high">
+				<s:filters>
+					<s:DropShadowFilter distance="1" quality="3"/>
+				</s:filters>
+			</s:Image>
+		</s:FormItem>
+		<s:FormItem width="100%">
+			<s:layout>
+				<s:HorizontalLayout verticalAlign="middle"/>
+			</s:layout>
+			<components:IconButton id="submit" label="ذخیره اطلاعات" click="submit_clickHandler(event)"/>
+			<s:Label id="message" text="اطلاعات با موفقیت در بانک اطلاعاتی ذخیره شد." color="0x728e00" alpha="0">
+				<s:filters>
+					<s:DropShadowFilter distance="1" quality="3" blurX="0" blurY="0" color="0xffffff"/>
+				</s:filters>
+			</s:Label>
+		</s:FormItem>
+		<s:FormItem id="summery" width="100%" styleName="validation" alpha="0">
+		</s:FormItem>
+	</s:Form>
+</forms:AbstractForm>

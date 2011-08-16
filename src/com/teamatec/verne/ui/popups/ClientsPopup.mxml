@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<popups:AbstractPopup xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					  xmlns:s="library://ns.adobe.com/flex/spark" 
+					  xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:popups="com.teamatec.verne.ui.popups.*"  left="10" right="10" top="10" bottom="10" title="فهرست مشتریان و کارفرمایان" xmlns:components="com.teamatec.verne.ui.components.*">
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			import com.maclema.mysql.MySqlToken;
+			import com.maclema.mysql.ResultSet;
+			import com.teamatec.verne.models.CategoryClientModel;
+			import com.teamatec.verne.models.ClientModel;
+			import com.teamatec.verne.ui.elements.AbstractView;
+			import com.teamatec.verne.ui.elements.grids.AbstractGrid;
+			import com.teamatec.verne.ui.renderers.CategoryClientsRenderer;
+			
+			import mx.collections.ArrayCollection;
+			
+			import spark.events.GridItemEditorEvent;
+			protected var clientsCategory:String;
+			protected var model:ClientModel;
+			
+			protected var clientsInCategory:ArrayCollection;
+			public var abstractGrid:AbstractGrid;
+
+			public function set category(value:String):void
+			{
+				clientsCategory = value;
+				model = new ClientModel();
+				model.clientsInCategory(clientsCategory,clientsListReady);
+			}
+			
+			public function get category():String
+			{
+				return clientsCategory;
+			}
+			
+			protected function clientsListReady(data:ResultSet, token:MySqlToken):void
+			{
+				clientsInCategory = data.getRows();
+				clients.dataProvider = clientsInCategory;
+			}
+			
+			protected function close_clickHandler(event:MouseEvent):void
+			{
+				abstractGrid.selectData();
+				abstractGrid.removeElement(this);
+			}
+			
+			protected function clients_gridItemEditorSessionSaveHandler(event:GridItemEditorEvent):void
+			{
+				var item:Object = clientsInCategory.getItemAt(event.rowIndex);
+				var categoryClientModel:CategoryClientModel = new CategoryClientModel();
+				
+				if(item.selected == true)
+				{
+					categoryClientModel.insert([item.client_id,category]);
+				}
+				else
+				{
+					categoryClientModel.deleteRows("client_id = "+item.client_id +" and category_id = "+category);
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	<s:VGroup width="100%" height="100%" paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5">
+		<s:HGroup>
+			<components:IconButton id="close" label="پایان" click="close_clickHandler(event)"/>
+		</s:HGroup>
+		<s:DataGrid id="clients" width="100%" height="100%" variableRowHeight="true" gridItemEditorSessionSave="clients_gridItemEditorSessionSaveHandler(event)">
+			<s:columns>
+				<s:ArrayList>
+					<s:GridColumn dataField="selected" headerText="انتخاب" width="50" itemRenderer="com.teamatec.verne.ui.renderers.CheckBoxItemRenderer"/>
+					<s:GridColumn dataField="title" headerText="نام مشتری"/>
+					<s:GridColumn dataField="cell" headerText="شماره مشتری" width="150"/>
+				</s:ArrayList>
+			</s:columns>
+		</s:DataGrid>
+	</s:VGroup>
+</popups:AbstractPopup>

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" width="100%" gap="-1"  fontSize="8" xmlns:components="com.teamatec.verne.ui.components.*" variableRowHeight="true">
+	<fx:Declarations>
+		<s:NumberFormatter id="money" groupingSeparator=","/>
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			import com.teamatec.verne.models.StandardFactorModel;
+			
+			import mx.collections.IList;
+			
+			[Bindable]
+			public var model:StandardFactorModel;
+			
+			public function set dataProvider(value:IList):void
+			{
+				data.dataProvider = value
+			}
+			
+			public function get dataProivder():IList
+			{
+				return data.dataProvider;
+			}
+		]]>
+	</fx:Script>
+	<s:HGroup width="100%" gap="-1" fontSize="7" verticalAlign="contentJustify">
+		
+		<components:FlowItem text="ردیف" width="30" background="#eeeeee"/>
+		<components:FlowItem text="کد کالا" width="35" background="#eeeeee"/>
+		<components:FlowItem width="122" align="justify" text="شرح کالا یا خدمات" background="#eeeeee"/>
+		<components:FlowItem text="تعداد/مقدار" width="30" background="#eeeeee"/>
+		<components:FlowItem text="واحد اندازه گیری" width="30" background="#eeeeee"/>
+		<components:FlowItem text="مبلغ واحد (ریال)" width="55" background="#eeeeee"/>
+		<components:FlowItem text="مبلغ کل (ریال)" width="55" background="#eeeeee"/>
+		<components:FlowItem text="مبلغ تخفیف (ریال)" width="55" background="#eeeeee"/>
+		<components:FlowItem text="مبلغ کل پس از تخفیف (ریال)" width="55" background="#eeeeee"/>
+		<components:FlowItem text="جمع مالیات و عوارض (ریال)" width="55" background="#eeeeee"/>
+		<components:FlowItem text="جمع مبلغ کل بعلاوه جمع مالیات و عوارض (ریال)" width="55" background="#eeeeee"/>
+		
+	</s:HGroup>
+	<s:DataGroup id="data" width="100%" itemRenderer="com.teamatec.verne.ui.renderers.FactorProductsRenderer">
+		<s:layout>
+			<s:VerticalLayout gap="-1"/>
+		</s:layout>
+	</s:DataGroup>
+	
+	<s:HGroup width="100%" gap="-1" verticalAlign="contentJustify">
+		
+		<components:FlowItem width="243" align="center" fontSize="11" text="جمع کل" color="#000000" background="#eeeeee" minHeight="30"/>
+		<components:FlowItem text="{money.format(model.priceSum)}" width="55"/>
+		<components:FlowItem text="{money.format(model.totalPriceSum)}" width="55"/>
+		<components:FlowItem text="{money.format(model.discountTotalSum)}" width="55"/>
+		<components:FlowItem text="{money.format(model.totalWithDiscountSum)}" width="55"/>
+		<components:FlowItem text="{money.format(model.taxSum)}" width="55"/>
+		<components:FlowItem text="{money.format(model.totalWithTaxSum)}" width="55"/>
+		
+	</s:HGroup>
+	<s:Group width="100%">
+		<s:Group right="0" width="271">
+			<s:Rect width="100%" height="100%">
+				<s:fill>
+					<s:BitmapFill id="bgFill" source="@Embed('resources/images/stripe.png')" fillMode="repeat" smooth="true" rotation="90"/>
+				</s:fill>
+				<s:stroke>
+					<s:SolidColorStroke color="#dddddd"/>
+				</s:stroke>
+			</s:Rect>
+			<s:RichText text="{'مبلغ قابل پرداخت به ریال : ' + money.format(model.totalWithTaxSum)}" fontSize="14" left="10" right="10" top="10" bottom="10" textAlign="center"/>
+		</s:Group>
+	</s:Group>
+</s:VGroup>

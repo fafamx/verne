@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" creationComplete="creationCompleteHandler(event)" xmlns:components="com.teamatec.verne.ui.components.*" initialize="initializeHandler(event)">
+	<fx:Metadata>
+		[DefaultProperty("contentChild")]
+		[DefaultProperty("contentChildren")]
+	</fx:Metadata>
+	<fx:Script>
+		<![CDATA[
+			import com.teamatec.verne.models.StandardFactorModel;
+			
+			import mx.collections.ArrayCollection;
+			import mx.core.UIComponent;
+			import mx.events.FlexEvent;
+			import mx.graphics.codec.JPEGEncoder;
+			
+			protected var job:PrintJob;
+			protected var options:PrintJobOptions = new PrintJobOptions();
+			
+			[Bindable]
+			protected var cashColor:uint = 0xeeeeee;
+			
+			[Bindable]
+			protected var notCashColor:uint = 0xffffff;
+			
+			[Bindable]
+			public var factorDataProvider:StandardFactorModel;
+			
+			public function set dataProvider(value:StandardFactorModel):void
+			{
+				factorDataProvider = value;
+				trace("cash : ",value.isCash);
+				if(!value.isCash)
+				{
+					cashColor = 0xffffff;
+					notCashColor = 0xeeeeee;
+				}
+				else
+				{
+					notCashColor = 0xffffff;
+					cashColor = 0xeeeeee;
+				}
+			}
+			
+			[Bindable]
+			public function get dataProvider():StandardFactorModel
+			{
+				return factorDataProvider;
+			}
+			
+			
+			protected function creationCompleteHandler(event:FlexEvent):void
+			{
+				job = new PrintJob();
+				options.printMethod = PrintMethod.AUTO;
+				options.pixelsPerInch  = 400;
+				job.selectPaperSize(PaperSize.A4);
+				elements.minWidth = int(job.printableArea.width);
+				elements.minHeight = int(job.printableArea.height);
+				
+				var buttonItems:ArrayCollection = new ArrayCollection();
+				buttonItems.addItem({id:"print",label:"چاپ استاندارد",icon:"resources/images/print.png",last:true});
+				buttonItems.addItem({id:"image",label:"ذخیره تصویر",icon:"resources/images/image.png"});
+				buttons.dataProvider = buttonItems;
+				buttons.addEventListener(Event.CHANGE,changeHandler);
+			}
+			
+			protected function changeHandler(event:Event):void
+			{
+				var item:String = buttons.buttons.selectedItem.id;
+				if(item == "print")
+				{
+					print();
+				}
+				else if(item == "image")
+				{
+					image();
+				}
+			}
+			
+			public function print():void
+			{
+				try
+				{
+					var pages:uint = Math.ceil(elements.height/int(job.printableArea.height));
+					job.start();
+					elements.scaleX = -1;
+					for(var i:uint = 0;i<pages;i++)
+					{
+						var rect:Rectangle = new Rectangle(0,i*int(job.printableArea.height),int(job.printableArea.width),int(job.printableArea.height));
+						var a:Number = rect.width;
+						job.addPage(elements,rect,options);
+					}
+					job.send();
+					elements.scaleX = 1;
+				} 
+				catch(error:Error) 
+				{
+					elements.scaleX = 1;
+				}
+				
+			}
+			
+			public function image():void
+			{
+				var file:File = new File();
+				var encoder:JPEGEncoder = new JPEGEncoder(100);
+				var bitmapData:BitmapData = new BitmapData(elements.width*1.5,elements.height*1.5,false,0xffffff);
+				var flipHorizontalMatrix:Matrix = new Matrix()
+				flipHorizontalMatrix.scale(-1.5,1.5)
+				flipHorizontalMatrix.translate(elements.width*1.5,0)
+				bitmapData.draw(elements,flipHorizontalMatrix);
+				var bytes:ByteArray = encoder.encode(bitmapData);
+				file.save(bytes,"image-"+new Date().time+".jpg");
+			}
+			
+			public function set contentChild(value:UIComponent):void
+			{
+				elements.addElement(value);
+			}
+			
+			public function set contentChildren(list:Array):void{
+				for each(var p:* in list)
+				{
+					elements.addElementAt(p, 0);
+				}
+			}
+			
+			protected function initializeHandler(event:FlexEvent):void
+			{
+				dataProvider = new StandardFactorModel();
+				
+				dataProvider.title = "صورتحساب فروش کالا و خدمات";
+			}
+			
+		]]>
+	</fx:Script>
+	<s:Rect width="100%" height="100%">
+		<s:fill>
+			<s:SolidColor color="#ffffff"/>
+		</s:fill>
+	</s:Rect>
+	<components:ButtonGroup id="buttons" right="10" top="10"/>
+	<s:Group id="elements" horizontalCenter="0">
+		
+	</s:Group>
+</s:Group>

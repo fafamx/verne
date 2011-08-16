@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:GridItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					xmlns:s="library://ns.adobe.com/flex/spark" 
+					xmlns:mx="library://ns.adobe.com/flex/mx" clipAndEnableScrolling="true" dataChange="dataChangeHandler(event)">
+	
+	<fx:Script>
+		<![CDATA[
+			import mx.events.FlexEvent;
+			
+			protected function dataChangeHandler(event:FlexEvent):void
+			{
+				lblData.text = data[column.dataField];
+				//lblData.height = lblData.contentHeight;
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:TextArea selectable="false" editable="false" id="lblData" top="9" left="7" right="7" contentBackgroundAlpha="0" borderVisible="false"/>
+	
+</s:GridItemRenderer>

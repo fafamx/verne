@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				xmlns:s="library://ns.adobe.com/flex/spark" 
+				xmlns:mx="library://ns.adobe.com/flex/mx" 
+				autoDrawBackground="false" xmlns:components="com.teamatec.verne.ui.components.*" dataChange="dataChangeHandler(event)">
+	<fx:Declarations>
+		<s:NumberFormatter id="money" groupingSeparator=","/>
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			import com.teamatec.utils.NumberUtil;
+			
+			import mx.events.FlexEvent;
+			
+			protected function dataChangeHandler(event:FlexEvent):void
+			{
+				if(!data) return;
+				index.text = (itemIndex+1).toString();
+				if(data.hasOwnProperty("sku"))
+				{
+					code.text = data.sku;
+				}
+				title.text = data.title;
+				if(data.description)
+				{
+					title.text = data.title + "\n" + data.description;
+				}
+				count.text = data.count;
+				unit.text = data.unit;
+				
+				price.text = money.format(data.sell_price);
+				totalPrice.text = money.format(data.total);
+				discount.text = money.format(data.discount);
+				totalWithDiscount.text = money.format(data.totalWithDiscount);
+				tax.text = money.format(data.tax);
+				totalWithTax.text = money.format(data.totalWithTax);
+				trace(height);
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:HGroup id="items" width="100%" gap="-1" verticalAlign="contentJustify">
+		
+		<components:FlowItem id="index" text="10" width="30"/>
+		<components:FlowItem id="code" text="12453" width="35"/>
+		<components:FlowItem id="title" width="122" align="justify" text="تست"/>
+		<components:FlowItem id="count" text="10" width="30"/>
+		<components:FlowItem id="unit" text="10" width="30"/>
+		<components:FlowItem id="price" text="123456789" width="55"/>
+		<components:FlowItem id="totalPrice" text="123456789" width="55"/>
+		<components:FlowItem id="discount" text="123456789" width="55"/>
+		<components:FlowItem id="totalWithDiscount" text="123456789" width="55"/>
+		<components:FlowItem id="tax" text="123456789" width="55"/>
+		<components:FlowItem id="totalWithTax" text="123456789" width="55"/>
+		
+	</s:HGroup>
+	
+</s:ItemRenderer>

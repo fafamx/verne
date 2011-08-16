@@ -1,0 +1,110 @@
+/* CSS file */
+@namespace s "library://ns.adobe.com/flex/spark";
+@namespace mx "library://ns.adobe.com/flex/mx";
+
+@font-face
+{
+	src:url("resources/fonts/FS_Yekan.TTF");
+	font-family: "yekan";
+	embedAsCFF: true;
+}
+
+@font-face
+{
+	src:url("resources/fonts/FS_Yekan.TTF");
+	font-family: "yekan";
+	embedAsCFF: true;
+	fontStyle: italic;
+}
+
+@font-face
+{
+	src:url("resources/fonts/FS_Yekan.TTF");
+	font-family: "yekan";
+	embedAsCFF: true;
+	fontWeight:bold;
+}
+
+
+s|WindowedApplication
+{
+	fontSize: 12px;
+	fontFamily: "yekan";
+}
+
+s|Form
+{
+	font-family: "yekan";
+}
+
+s|Label
+{
+	fontFamily: "yekan";
+}
+
+s|FormHeading
+{
+	skinClass: ClassReference("com.teamatec.verne.ui.skin.FormHeadingSkin");
+}
+
+s|FormItem
+{
+	skinClass: ClassReference("com.teamatec.verne.ui.skin.FormItemSkin");
+}
+
+s|VScrollBar
+{
+	skinClass: ClassReference("com.teamatec.verne.ui.skin.VScrollBarSkin");
+}
+
+s|HScrollBar
+{
+	skinClass: ClassReference("com.teamatec.verne.ui.skin.HScrollBarSkin")
+}
+
+s|TextInput
+{
+	skinClass: ClassReference("com.teamatec.verne.ui.skin.TextInputSkin");
+	focusColor: #cccccc;
+}
+
+s|TextArea
+{
+	skinClass: ClassReference("com.teamatec.verne.ui.skin.TextAreaSkin");
+	focusColor: #cccccc;
+}
+
+s|DataGrid
+{
+	skinClass: ClassReference("com.teamatec.verne.ui.skin.DataGridSkin");
+	borderColor:#919191;
+	alternatingRowColors:#eeeeee,#ffffff;
+	caretColor:#dddddd;
+	rollOverColor:#f9f9f9;
+	selectionColor:#dddddd;
+}
+
+mx|global
+{
+	textFieldClass: ClassReference("mx.core.UIFTETextField");
+	fontFamily: "yekan";
+}
+
+mx|ToolTip
+{
+	backgroundColor:#222222;
+	color:#ffffff;
+	cornerRadius:5;
+	paddingBottom:5;
+	paddingLeft:5;
+	paddingRight:5;
+	paddingTop:5;
+	backgroundAlpha:.8;
+	leading:10;
+	textAlign:right;
+}
+
+.validation
+{
+	color:#dd0000;
+}

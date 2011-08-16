@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				xmlns:s="library://ns.adobe.com/flex/spark" 
+				xmlns:mx="library://ns.adobe.com/flex/mx" 
+				autoDrawBackground="false" xmlns:components="com.teamatec.verne.ui.components.*" dataChange="dataChangeHandler(event)" resize="itemrenderer1_resizeHandler(event)">
+	<fx:Declarations>
+		<s:NumberFormatter id="money" groupingSeparator=","/>
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			import com.demonsters.debugger.MonsterDebugger;
+			import com.teamatec.utils.NumberUtil;
+			
+			import flash.utils.setTimeout;
+			
+			import mx.events.FlexEvent;
+			import mx.events.ResizeEvent;
+			
+			import spark.components.DataGroup;
+			
+			public static var totalSize:uint = 0;
+			public static var pages:uint = 0;
+			
+			protected function dataChangeHandler(event:FlexEvent):void
+			{
+				if(!data) return;
+				if(data.gap == true)
+				{
+					items.visible = false;
+					height = 100;
+					if(data.size)
+					{
+						height = data.size;
+					}
+					if(data.visible == true)
+					{
+						gapItem.visible = true;
+					}
+					return;
+				}
+				gapItem.visible = false;
+				index.text = (itemIndex+1).toString();
+				if(data.hasOwnProperty("sku"))
+				{
+					code.text = data.sku;
+				}
+				title.text = data.title;
+				if(data.description)
+				{
+					title.text = data.title + "\n" + data.description;
+				}
+				
+				if(data.photo)
+				{
+					title.container.gap = 5;
+					title.icon.source = null;
+					title.icon.source = String(data.photo);
+					MonsterDebugger.log(String(data.photo));
+					title.icon.width = 64;
+					title.icon.height = 64;
+					title.icon.visible = true;
+				}
+				count.text = data.count;
+				
+				price.text = money.format(data.sell_price);
+				discount.text = money.format(data.discount);
+				tax.text = money.format(data.tax);
+				totalWithTax.text = money.format(data.totalWithTax);
+				
+				setTimeout(heightCalculator,1000);
+			}
+			
+			protected function heightCalculator():void
+			{
+				if(itemIndex == 0)
+				{
+					totalSize = 0;
+					pages = 0;
+				}
+				totalSize += items.height;
+				var list:DataGroup = owner as DataGroup;
+				if(totalSize > 650)
+				{
+					trace("totalSize",totalSize);
+					totalSize = 0;
+					pages +=1;
+					list.dataProvider.addItemAt({gap:true},itemIndex);
+					return;
+				}
+				
+				if(totalSize > 500 && itemIndex == list.dataProvider.length-1)
+				{
+					totalSize = 0;
+					pages +=1;
+					list.dataProvider.addItemAt({gap:true,size:200},itemIndex+1);
+					return;
+				}
+				/* 				
+				if(totalSize < 300 && itemIndex == list.dataProvider.length-1)
+				{
+					list.dataProvider.addItemAt({gap:true,size:470-totalSize,visible:true},itemIndex+1);
+					totalSize = 0;
+				} */
+			}
+			
+			protected function itemrenderer1_resizeHandler(event:ResizeEvent):void
+			{
+				
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:HGroup id="items" width="100%" gap="-1" verticalAlign="contentJustify">
+		
+		<components:FlowItem id="index" text="10" width="30"/>
+		<components:FlowItem id="code" text="12453" width="35"/>
+		<components:FlowItem id="title" width="179" align="justify" text="تست"/>
+		<components:FlowItem id="count" text="10" width="30"/>
+		<components:FlowItem id="price" text="123456789" width="75"/>
+		<components:FlowItem id="discount" text="123456789" width="75"/>
+		<components:FlowItem id="tax" text="123456789" width="75"/>
+		<components:FlowItem id="totalWithTax" text="123456789" width="75"/>
+		
+	</s:HGroup>
+	
+	<components:FlowItem id="gapItem" text="" width="100%" height="100%" visible="false"/>
+	
+</s:ItemRenderer>

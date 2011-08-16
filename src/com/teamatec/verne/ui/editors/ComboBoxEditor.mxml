@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:GridItemEditor xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				  xmlns:s="library://ns.adobe.com/flex/spark" 
+				  xmlns:mx="library://ns.adobe.com/flex/mx" creationComplete="creationCompleteHandler(event)">
+	
+	<fx:Script>
+		<![CDATA[
+			import com.maclema.mysql.ResultSet;
+			import com.teamatec.verne.models.ProductModel;
+			
+			import mx.collections.ArrayCollection;
+			import mx.events.FlexEvent;
+			
+			private var products:ArrayCollection
+			
+			// Override the setter to initialize the NumericStepper control
+			// with the cell data.
+			override public function set value(newValue:Object):void 
+			{
+				
+			}
+			
+			// Override the getter to return the current value of 
+			// the NumericStepper control.
+			// The save() method updates the data provider element for the
+			// row of the grid with this value. 
+			override public function get value():Object {
+				var result:Object = null;
+				if(list.selectedItem)
+				{
+					data.product_id = list.selectedItem.value;
+					result = list.selectedItem.label;
+				}
+				return result;
+			}
+			
+			// Override setFocus() to shift focus to the NumericStepper.
+			override public function setFocus():void {
+				list.setFocus();
+			}
+			
+			protected function creationCompleteHandler(event:FlexEvent):void
+			{
+				var client:ProductModel = new ProductModel();
+				client.selectALL(allProducts);
+			}
+			
+			protected function allProducts(result:ResultSet, token:*):void
+			{
+				var items:ArrayCollection = result.getRows();
+				products = new ArrayCollection();
+				list.dataProvider = products;
+				for(var i:uint=0;i<items.length;i++)
+				{
+					var item:Object = items.getItemAt(i);
+					products.addItem({label:item.title,value:item.product_id});
+					if(item.product_id == data.product_id)
+					{
+						list.selectedIndex = i;
+					}
+				}
+				
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:ComboBox id="list" width="100%"/>
+</s:GridItemEditor>

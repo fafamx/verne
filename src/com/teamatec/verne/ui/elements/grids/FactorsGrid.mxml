@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<grids:AbstractGrid xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					xmlns:s="library://ns.adobe.com/flex/spark" 
+					xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:grids="com.teamatec.verne.ui.elements.grids.*" width="100%" height="100%" creationComplete="creationCompleteHandler(event)" xmlns:components="com.teamatec.verne.ui.components.*" xmlns:forms="com.teamatec.verne.ui.elements.forms.*" xmlns:popups="com.teamatec.verne.ui.popups.*" xmlns:templates="com.teamatec.verne.ui.templates.*" xmlns:reports="com.teamatec.verne.ui.elements.reports.*">
+	<fx:Script>
+		<![CDATA[
+			import com.maclema.mysql.MySqlToken;
+			import com.maclema.mysql.ResultSet;
+			import com.teamatec.verne.models.*;
+			
+			import flash.utils.setTimeout;
+			
+			import mx.collections.ArrayCollection;
+			import mx.events.FlexEvent;
+			
+			public static var factorItem:FactorsGrid;
+			protected var sequenceData:ArrayCollection;
+			protected var gridData:ArrayCollection;
+			
+			public var fastPrint:Boolean = false;
+			public static var fastPrintFunction:Function;
+			
+			public override function creationCompleteHandler(event:FlexEvent):void
+			{
+				factorItem = this;
+				model = new FactorModel();
+				selectData();
+				model.addEventListener(AbstractModel.COUNT_COMPLETE,countComplete);
+			}
+			
+			public override function selectData():void
+			{
+				model.selectALL(contentReady," ORDER by factor_id DESC");
+			}
+			
+			protected function countComplete(event:Event):void
+			{
+				if(count)
+				{
+					count.text = "تعداد رکوردهای موجود : "+ model.count;
+				}
+			}
+			
+			protected function contentReady(data:ResultSet, token:MySqlToken):void
+			{
+				var sequnce:SequenceModel = new SequenceModel();
+				sequnce.selectALL(allSequences);
+				gridData = data.getRows();
+				gridToAbstract[grid] = this;
+				trace("Data grid:",grid);
+			}
+			
+			protected function allSequences(data:ResultSet, token:MySqlToken):void
+			{
+				sequenceData = data.getRows();
+				if(grid)
+				{
+					grid.dataProvider = gridData;
+					setTimeout(checkFast,500);
+				}
+			}
+			
+			protected function checkFast():void
+			{
+				if(fastPrint == true)
+				{
+					if(fastPrintFunction != null)
+					{
+						fastPrintFunction(null);
+					}
+				}
+				fastPrint = false;
+			}
+			
+			protected function typeToText(item:Object,column:GridColumn):String
+			{
+				var result:String = item[column.dataField];
+				for(var i:uint = 0 ; i<sequenceData.length;i++)
+				{
+					var item:Object = sequenceData.getItemAt(i);
+					if(result == item.sequence_id)
+					{
+						result = item.title;
+					}
+				}
+				return result;
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		
+	</fx:Declarations>
+	<grids:states>
+		<s:State name="grid"/>
+		<s:State name="form"/>
+		<s:State name="standardPrint"/>
+		<s:State name="fanikPrint"/>
+		<s:State name="report"/>
+		<s:State name="fastForm"/>
+	</grids:states>
+	<templates:FanikTemplate id="fanikPrint" width="100%" height="100%" includeIn="fanikPrint"/>
+	<templates:StandardTemplate id="standardPrint" width="100%" height="100%" includeIn="standardPrint"/>
+	<forms:FactorsForm id="form" width="100%" height="100%" includeIn="form" currentView="{this}"/>
+	<reports:FactorsReport id="report" width="100%" height="100%" includeIn="report"/>
+	<popups:FactorsReportPopup id="sidebar" includeIn="report"/>
+	<forms:FastFactorForm id="fastForm" width="100%" height="100%" includeIn="fastForm"/>
+	<s:VGroup left="0" right="0" top="0" bottom="0" includeIn="grid">
+		<s:Group width="100%">
+			<components:PageHeader width="100%" text="فهرست فاکتورهای صادر شده"/>
+			<s:Label id="count" verticalCenter="0" right="5" color="0x999999"/>
+		</s:Group>
+		<s:DataGrid id="grid" width="100%" height="100%">
+			<s:columns>
+				<s:ArrayList>
+					<s:GridColumn dataField="factor_id" width="70" sortable="true" headerText="کد فاکتور"/>
+					<s:GridColumn dataField="type" headerText="نوع" width="70" labelFunction="typeToText"/>
+					<s:GridColumn dataField="factor_date" headerText="تاریخ" width="80" itemRenderer="com.teamatec.verne.ui.renderers.ShamsiItemRenderer"/>
+					<s:GridColumn dataField="company_title" headerText="شرکت" width="150"/>
+					<s:GridColumn dataField="client_title" headerText="مشتری" width="150"/>
+					<s:GridColumn dataField="serial" headerText="شماره سریال" width="90"/>
+					<s:GridColumn dataField="total" headerText="مجموع"/>
+					<s:GridColumn width="100" itemRenderer="com.teamatec.verne.ui.renderers.FactorActionsRenderer" dataField="factor_id"/>
+					<s:GridColumn width="70" itemRenderer="com.teamatec.verne.ui.renderers.FactorGridActionsRenderer" dataField="factor_id"/>
+				</s:ArrayList>
+			</s:columns>
+		</s:DataGrid>
+	</s:VGroup>
+</grids:AbstractGrid>

@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<reports:AbstractReport xmlns:fx="http://ns.adobe.com/mxml/2009" 
+						xmlns:s="library://ns.adobe.com/flex/spark" 
+						xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:reports="com.teamatec.verne.ui.elements.reports.*" xmlns:components="com.teamatec.verne.ui.components.*">
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			import com.maclema.mysql.MySqlToken;
+			import com.maclema.mysql.ResultSet;
+			import com.teamatec.verne.models.SMSModel;
+			
+			import mx.collections.ArrayCollection;
+			import mx.utils.StringUtil;
+			
+			[Bindable]
+			protected var que:ArrayCollection;
+			
+			[Bindable]
+			protected var statusCount:ArrayCollection;
+			
+			protected var model:SMSModel;
+			
+			protected var status:Dictionary;
+			
+			public override function buildReport():void
+			{
+				super.buildReport();
+				status = new Dictionary();
+				status["-1"] = "ارسال نشده";
+				status["0"] = "ارسال شده به مخابرات";
+				status["1"] = "رسیده به گوشی";
+				status["2"] = "نرسیده به گوشی";
+				status["4"] = "در صف ارسال";
+				status["8"] = "رسیده به مخابرات";
+				status["16"] = "نرسیده به مخابرات";
+				
+				model = new SMSModel();
+				model.selectMonthCount(monthCountReady);
+				model.countByStatus(statusCountReady);
+			}
+			
+			protected function monthCountReady(data:ResultSet, token:MySqlToken):void
+			{
+				que = data.getRows();
+			}
+			
+			protected function statusCountReady(data:ResultSet, token:MySqlToken):void
+			{
+				
+				statusCount = data.getRows();
+				for(var i:uint = 0;i<statusCount.length;i++)
+				{
+					var item:Object = statusCount.getItemAt(i);
+					item.status = status[String(item.status)];
+				}
+			}
+			
+			private function pieSeries_labelFunc(item:Object, field:String, index:Number, percentValue:Number):String {
+				return StringUtil.substitute("{0} ({1}%)",
+					item.status,
+					percentValue.toFixed(1));
+			}
+		]]>
+	</fx:Script>
+	<s:VGroup width="100%" height="100%">
+		<components:PageHeader text="تعداد پیام های ارسالی در روز های ماه میلادی جاری :" width="100%" padding="0"/>
+		<mx:LineChart id="liveSMS" seriesFilters="{[]}" dataProvider="{que}" showDataTips="true" width="100%" height="250" layoutDirection="ltr">
+			<mx:horizontalAxis>
+				<mx:CategoryAxis
+					dataProvider="{que}"
+					categoryField="day"
+					/>
+			</mx:horizontalAxis>
+			<mx:verticalAxis>
+				<mx:LinearAxis minimum="0" maximum="20" interval="1" />
+			</mx:verticalAxis>
+			<mx:series>
+				<mx:LineSeries
+					form="curve"
+					yField="count"
+					
+					displayName="تعداد">
+				</mx:LineSeries>
+			</mx:series>
+		</mx:LineChart>
+		<components:PageHeader text="پیام ها به تفکیک وظعیت :" width="100%" padding="0"/>
+		<mx:PieChart id="pie" dataProvider="{statusCount}" width="100%" height="250" layoutDirection="ltr">
+			<mx:series>
+				<mx:PieSeries
+					filters="{[]}"
+					field="count" 
+					nameField="status" 
+					labelPosition="callout"
+					labelFunction="pieSeries_labelFunc"
+					/>
+			</mx:series>
+		</mx:PieChart>
+	</s:VGroup>
+	
+</reports:AbstractReport>

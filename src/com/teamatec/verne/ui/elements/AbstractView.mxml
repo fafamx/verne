@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 creationComplete="abstrctCreationCompleteHandler(event)"
+		 creationCompleteEffect="{fadeIn}" stateChangeComplete="stateChangeCompleteHandler(event)" alpha="0">
+	<fx:Declarations>
+		<s:Fade id="fadeIn" alphaFrom="0" alphaTo="1" duration="500" startDelay="500"/>
+		<s:NumberFormatter id="formatter" decimalSeparator=","/>
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			import com.teamatec.verne.models.AbstractModel;
+			import com.teamatec.verne.ui.elements.grids.AbstractGrid;
+			
+			import mx.events.FlexEvent;
+			
+			import spark.components.gridClasses.GridColumn;
+			public var model:AbstractModel;
+			public static var gridToAbstract:Dictionary;
+			public var currentView:AbstractGrid;
+			
+			public function creationCompleteHandler(event:FlexEvent):void
+			{
+				
+			}
+			
+			public function shortText(value:String,len:uint):String
+			{
+				var result:String = value;
+				if(result && result.length > len)
+				{
+					result = result.slice(0,len) + " ...";
+				}
+				return result;
+			}
+			
+			public function gridLabelFunction(item:Object,column:GridColumn):String
+			{
+				var result:String = item[column.dataField];
+				result = shortText(result,70);
+				return result;
+			}
+			
+			public function gridMoneyLabel(item:Object,column:GridColumn):String
+			{
+				return formatter.format(item[column.dataField]);
+			}
+			
+			protected function abstrctCreationCompleteHandler(event:FlexEvent):void
+			{
+				if(!gridToAbstract)
+				{
+					gridToAbstract = new Dictionary(true);
+				}
+			}
+			
+			protected function stateChangeCompleteHandler(event:FlexEvent):void
+			{
+				alpha = 0;
+				fadeIn.play();
+			}
+			
+		]]>
+	</fx:Script>
+</s:Group>

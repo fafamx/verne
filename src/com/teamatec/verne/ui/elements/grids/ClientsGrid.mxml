@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<grids:AbstractGrid xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					xmlns:s="library://ns.adobe.com/flex/spark" 
+					xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:grids="com.teamatec.verne.ui.elements.grids.*" width="100%" height="100%" creationComplete="creationCompleteHandler(event)" xmlns:components="com.teamatec.verne.ui.components.*" xmlns:forms="com.teamatec.verne.ui.elements.forms.*">
+	<fx:Script>
+		<![CDATA[
+			import com.childoftv.xlsxreader.Worksheet;
+			import com.childoftv.xlsxreader.XLSXLoader;
+			import com.maclema.mysql.Field;
+			import com.maclema.mysql.MySqlToken;
+			import com.maclema.mysql.ResultSet;
+			import com.shortybmc.data.parser.CSV;
+			import com.teamatec.verne.models.*;
+			
+			import flash.utils.setTimeout;
+			
+			import mx.events.FlexEvent;
+			
+			protected var excel:XLSXLoader;
+			
+			public override function creationCompleteHandler(event:FlexEvent):void
+			{
+				model = new ClientModel();
+				selectData();
+				model.addEventListener(AbstractModel.COUNT_COMPLETE,countComplete);
+				gridToAbstract[grid] = this;
+			}
+			
+			public override function selectData():void
+			{
+				model.selectALL(contentReady);
+			}
+			
+			protected function countComplete(event:Event):void
+			{
+				count.text = "تعداد رکوردهای موجود : "+ model.count;
+			}
+			
+			protected function contentReady(data:ResultSet, token:MySqlToken):void
+			{
+				grid.dataProvider = data.getRows();
+			}
+			
+			protected function excel_clickHandler(event:MouseEvent):void
+			{
+				var file:File = new File();
+				file.browse([new FileFilter("Excel 2007 Format","*.xlsx")]);
+				file.addEventListener(Event.SELECT,fileSelected);
+			}
+			
+			protected function fileSelected(event:Event):void
+			{
+				var file:File = event.target as File;
+				excel = new XLSXLoader();
+				excel.load(file.url);
+				excel.addEventListener ( Event.COMPLETE, excelComplete );
+			}
+			
+			protected function excelComplete(event:Event):void
+			{
+				var sheet_1:Worksheet = excel.worksheet("clients");
+				var titles:XMLList = sheet_1.getRowsAsValues("A");
+				var descriptions:XMLList = sheet_1.getRowsAsValues("B");
+				var phones:XMLList = sheet_1.getRowsAsValues("C");
+				var cells:XMLList = sheet_1.getRowsAsValues("D");
+				var emails:XMLList = sheet_1.getRowsAsValues("E");
+				var economic_codes:XMLList = sheet_1.getRowsAsValues("F");
+				var national_codes:XMLList = sheet_1.getRowsAsValues("G");
+				var postal_codes:XMLList = sheet_1.getRowsAsValues("H");
+				var addresses:XMLList = sheet_1.getRowsAsValues("I");
+				var faxes:XMLList = sheet_1.getRowsAsValues("J");
+				var cities:XMLList = sheet_1.getRowsAsValues("K");
+				var states:XMLList = sheet_1.getRowsAsValues("L");
+				var townships:XMLList = sheet_1.getRowsAsValues("M");
+				var len:uint = Math.max(titles.length(),cells.length());
+				for(var i:uint = 1 ;i<len;i++)
+				{
+					model.insert([titles[i],descriptions[i],phones[i],cells[i],emails[i],economic_codes[i],national_codes[i],postal_codes[i],addresses[i],faxes[i],cities[i],states[i],townships[i]]);
+				}
+				
+				setTimeout(model.selectALL,1000,contentReady);
+				
+			}
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		
+	</fx:Declarations>
+	<grids:states>
+		<s:State name="grid"/>
+		<s:State name="form"/>
+	</grids:states>
+	<forms:ClientsForm id="form" width="100%" height="100%" includeIn="form" currentView="{this}"/>
+	<s:VGroup left="0" right="0" top="0" bottom="0" includeIn="grid">
+		<s:Group width="100%">
+			<components:PageHeader width="100%" text="فهرست مشتریان و کارفرمایان"/>
+			<s:Label id="count" verticalCenter="0" right="5" color="0x999999"/>
+			<components:IconButton id="excelImport" label="ورود از Excel" click="excel_clickHandler(event)" verticalCenter="0" horizontalCenter="0" />
+		</s:Group>
+		<s:DataGrid id="grid" width="100%" height="100%">
+			<s:columns>
+				<s:ArrayList>
+					<s:GridColumn dataField="client_id" width="70" sortable="true" headerText="کد مشتری"/>
+					<s:GridColumn dataField="title" headerText="عنوان" width="200"/>
+					<s:GridColumn dataField="description" headerText="توضیحات" labelFunction="{gridLabelFunction}"/>
+					<s:GridColumn dataField="phone" headerText="تلفن" width="70"/>
+					<s:GridColumn dataField="cell" headerText="موبایل" width="100"/>
+					<s:GridColumn dataField="email" headerText="ایمیل" width="150"/>
+					<s:GridColumn dataField="economic_code" headerText="کد اقتصادی" width="70"/>
+					<s:GridColumn width="70" itemRenderer="com.teamatec.verne.ui.renderers.GridActionsRenderer" dataField="client_id"/>
+				</s:ArrayList>
+			</s:columns>
+		</s:DataGrid>
+	</s:VGroup>
+</grids:AbstractGrid>

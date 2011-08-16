@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:GridItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					xmlns:s="library://ns.adobe.com/flex/spark" 
+					xmlns:mx="library://ns.adobe.com/flex/mx" clipAndEnableScrolling="true" xmlns:components="com.teamatec.verne.ui.components.*" dataChange="dataChangeHandler(event)">
+	
+	<fx:Script>
+		<![CDATA[
+			import com.teamatec.verne.models.AbstractModel;
+			import com.teamatec.verne.models.CategoryClientModel;
+			import com.teamatec.verne.ui.elements.AbstractView;
+			import com.teamatec.verne.ui.elements.grids.AbstractGrid;
+			import com.teamatec.verne.ui.popups.ClientsPopup;
+			
+			import mx.events.FlexEvent;
+			
+			protected var model:CategoryClientModel;
+			protected var abstractGrid:AbstractGrid;
+			
+			override public function prepare(hasBeenRecycled:Boolean):void {
+				//lblData.text = data[column.dataField]
+			}
+			
+			protected function list_clickHandler(event:MouseEvent):void
+			{
+				abstractGrid = AbstractView.gridToAbstract[grid.dataGrid];
+				var id:String = data[column.dataField];
+				var clients:ClientsPopup = new ClientsPopup();
+				clients.abstractGrid = abstractGrid;
+				clients.category = id;
+				abstractGrid.addElement(clients);
+				
+			}
+			
+			protected function dataChangeHandler(event:FlexEvent):void
+			{
+				model = new CategoryClientModel();
+				model.countRows(" category_id = "+data[column.dataField]);
+				model.addEventListener(AbstractModel.COUNT_COMPLETE,countComplete);
+			}
+			
+			protected function countComplete(event:Event):void
+			{
+				if(list.label == "")
+				{
+					list.label = model.count.toString();
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	<s:Group verticalCenter="0" horizontalCenter="0" top="5" bottom="5" fontSize="12">
+		<components:IconButton id="list" label="" click="list_clickHandler(event)"/>
+	</s:Group>
+	
+</s:GridItemRenderer>

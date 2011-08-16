@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="utf-8"?>
+<forms:AbstractForm xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					   xmlns:s="library://ns.adobe.com/flex/spark" 
+					   xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:elements="com.teamatec.verne.ui.elements.*"
+					   xmlns:forms="com.teamatec.verne.ui.elements.forms.*"
+					   width="100%" height="100%" xmlns:components="com.teamatec.verne.ui.components.*" creationComplete="creationCompleteHandler(event)" xmlns:validators="com.teamatec.verne.validators.*">
+	
+	<fx:Script>
+		<![CDATA[
+			import com.greensock.TweenLite;
+			import com.greensock.TweenNano;
+			import com.maclema.mysql.MySqlToken;
+			import com.maclema.mysql.ResultSet;
+			import com.teamatec.verne.models.*;
+			
+			import mx.events.FlexEvent;
+			import mx.validators.Validator;
+			
+			import spark.events.TextOperationEvent;
+			
+			protected function submit_clickHandler(event:MouseEvent):void
+			{
+				cleanSummery();
+				var validationResult:Array = Validator.validateAll([titleValidation]);
+				TweenNano.to(message,.5,{alpha:0});
+				if(validationResult.length == 0)
+				{
+					submit.enabled = false;
+					
+					var dbData:Array = [title.text,description.text,phone.text,cell.text,email.text,economic_code.text,national_code.text,postal_code.text,address.text,fax.text,city.text,state.text,township.text];
+					if(updateData)
+					{
+						model.update(dbData,"client_id = "+updateData.client_id);
+					}
+					else
+					{
+						model.insert(dbData);
+					}
+					model.addEventListener(Event.COMPLETE,storeComplete);
+				}
+			}
+			
+			protected function cleanSummery():void
+			{
+				TweenLite.to(summery,.5,{alpha:0});
+				summery.removeAllElements();
+			}
+			
+			protected function showSummery():void
+			{
+				TweenLite.to(summery,.5,{alpha:1});
+			}
+			
+			protected function storeComplete(event:Event):void
+			{
+				TweenNano.to(message,.5,{alpha:1});
+				submit.enabled = true;
+				if(updateData)
+				{
+					currentView.currentState = "grid";
+					currentView.selectData();
+				}
+			}
+			
+			public override function creationCompleteHandler(event:FlexEvent):void
+			{
+				model = new ClientModel();
+				if(updateData)
+				{
+					updateAction();
+				}
+			}
+			
+			public function updateAction():void
+			{
+				title.text = updateData.title;
+				description.text = updateData.description;
+				phone.text = updateData.phone;
+				cell.text = updateData.cell;
+				fax.text = updateData.fax;
+				email.text = updateData.email;
+				economic_code.text = updateData.economic_code;
+				national_code.text = updateData.national_code;
+				postal_code.text = updateData.postal_code;
+				address.text = updateData.address;
+				state.text = updateData.state;
+				township.text = updateData.township;
+				city.text = updateData.city;
+			}
+			
+			public override function clean():void
+			{
+				super.clean();
+				title.text = "";
+				description.text = "";
+				phone.text = "";
+				cell.text = "";
+				fax.text = "";
+				email.text = "";
+				economic_code.text = "";
+				national_code.text = "";
+				postal_code.text = "";
+				address.text = "";
+				state.text = "";
+				township.text = "";
+				city.text = "";
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<mx:StringValidator id="titleValidation" source="{title}" property="text" required="true" requiredFieldError="مقدار این فیلد اجباری می باشد."/>
+	</fx:Declarations>
+	<s:Form id="form" width="100%" height="100%" minWidth="550">
+		<s:FormHeading width="100%" label="فرم ثبت مشتری و کارفرما"/>
+		<s:FormItem label="عنوان مشتری یا کارفرما" width="100%">
+			<s:TextInput id="title" width="250"/>
+		</s:FormItem>
+		<s:FormItem label="توضیحات" width="100%">
+			<s:TextArea id="description" width="450" height="100"/>
+		</s:FormItem>
+		<s:FormItem label="تلفن" width="100%">
+			<s:layout>
+				<s:HorizontalLayout verticalAlign="middle"/>
+			</s:layout>
+			<s:TextInput id="phone" direction="ltr" textAlign="center"/>
+		</s:FormItem>
+		<s:FormItem label="مبایل" width="100%">
+			<s:layout>
+				<s:HorizontalLayout verticalAlign="middle"/>
+			</s:layout>
+			<s:TextInput id="cell" direction="ltr" textAlign="center"/>
+		</s:FormItem>
+		<s:FormItem label="فکس" width="100%">
+			<s:layout>
+				<s:HorizontalLayout verticalAlign="middle"/>
+			</s:layout>
+			<s:TextInput id="fax" direction="ltr" textAlign="center"/>
+		</s:FormItem>
+		<s:FormItem label="ایمیل" width="100%">
+			<s:layout>
+				<s:HorizontalLayout verticalAlign="middle"/>
+			</s:layout>
+			<s:TextInput id="email" direction="ltr" textAlign="left" width="250"/>
+		</s:FormItem>
+		<s:FormItem label="کد اقتصادی" width="100%">
+			<s:layout>
+				<s:HorizontalLayout verticalAlign="middle"/>
+			</s:layout>
+			<s:TextInput id="economic_code" direction="ltr" textAlign="center"/>
+		</s:FormItem>
+		<s:FormItem label="کد ملی" width="100%">
+			<s:layout>
+				<s:HorizontalLayout verticalAlign="middle"/>
+			</s:layout>
+			<s:TextInput id="national_code" direction="ltr" textAlign="center"/>
+		</s:FormItem>
+		<s:FormItem label="کد پستی" width="100%">
+			<s:layout>
+				<s:HorizontalLayout verticalAlign="middle"/>
+			</s:layout>
+			<s:TextInput id="postal_code" direction="ltr" textAlign="center"/>
+		</s:FormItem>
+		<s:FormItem label="آدرس" width="100%">
+			<s:TextArea id="address" width="450" height="100"/>
+		</s:FormItem>
+		
+		<s:FormItem label="استان" width="100%">
+			<s:TextInput id="state"/>
+		</s:FormItem>
+		<s:FormItem label="شهرستان" width="100%">
+			<s:TextInput id="township"/>
+		</s:FormItem>
+		<s:FormItem label="شهر" width="100%">
+			<s:TextInput id="city"/>
+		</s:FormItem>
+		
+		<s:FormItem width="100%">
+			<s:layout>
+				<s:HorizontalLayout verticalAlign="middle"/>
+			</s:layout>
+			<components:IconButton id="submit" label="ذخیره اطلاعات" click="submit_clickHandler(event)"/>
+			<s:Label id="message" text="اطلاعات با موفقیت در بانک اطلاعاتی ذخیره شد." color="0x728e00" alpha="0">
+				<s:filters>
+					<s:DropShadowFilter distance="1" quality="3" blurX="0" blurY="0" color="0xffffff"/>
+				</s:filters>
+			</s:Label>
+		</s:FormItem>
+		<s:FormItem id="summery" width="100%" styleName="validation" alpha="0">
+		</s:FormItem>
+	</s:Form>
+</forms:AbstractForm>

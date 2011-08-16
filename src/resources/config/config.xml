@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<verne>
+	<database>
+		<server>localhost</server>
+		<port>3306</port>
+		<name>verne</name>
+		<username>root</username>
+		<password></password>
+	</database>
+	<modules>
+		<accounting>false</accounting>
+	</modules>
+	<sms>
+		<isEnable>true</isEnable>
+		<wsdl>http://sms.hostiran.net/webservice/index.php?WSDL</wsdl>
+		<username>arzpeyma</username>
+		<password>3996107</password>
+		<from>30007290006735</from>
+		<type></type>
+	</sms>
+</verne>

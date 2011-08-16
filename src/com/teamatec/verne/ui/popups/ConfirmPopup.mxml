@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<popups:AbstractPopup xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					  xmlns:s="library://ns.adobe.com/flex/spark" 
+					  xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:popups="com.teamatec.verne.ui.popups.*" width="350"
+					  title="حذف آیتم" xmlns:components="com.teamatec.verne.ui.components.*">
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			import com.greensock.TweenMax;
+			import com.teamatec.verne.ui.elements.grids.AbstractGrid;
+			import com.teamatec.verne.ui.renderers.GridActionsRenderer;
+			public var grid:AbstractGrid;
+			public var renderer:GridActionsRenderer;
+			
+			protected function no_clickHandler(event:MouseEvent):void
+			{
+				TweenMax.to(this,.5,{autoAlpha:0});
+			}
+			
+			protected function yes_clickHandler(event:MouseEvent):void
+			{
+				TweenMax.to(this,.5,{autoAlpha:0});
+				renderer.doRemove(grid);
+			}
+			
+		]]>
+	</fx:Script>
+	<s:VGroup width="100%" paddingBottom="0" paddingTop="10" paddingLeft="10" paddingRight="10" horizontalAlign="right">
+		<s:Label width="100%" text="آیا تمایل به ادامه عملیات دارید؟"/>
+		<s:HGroup>
+			<components:IconButton label="بله" id="yes" click="yes_clickHandler(event)"/>
+			<components:IconButton label="خیر" id="no" click="no_clickHandler(event)"/>
+		</s:HGroup>
+	</s:VGroup>
+</popups:AbstractPopup>

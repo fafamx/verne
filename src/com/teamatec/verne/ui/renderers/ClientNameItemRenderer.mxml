@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:GridItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					xmlns:s="library://ns.adobe.com/flex/spark" 
+					xmlns:mx="library://ns.adobe.com/flex/mx" clipAndEnableScrolling="true" dataChange="dataChangeHandler(event)">
+	
+	<fx:Script>
+		<![CDATA[
+			import com.maclema.mysql.ResultSet;
+			import com.teamatec.verne.models.ClientModel;
+			
+			import mx.collections.ArrayCollection;
+			import mx.events.FlexEvent;
+			override public function prepare(hasBeenRecycled:Boolean):void {
+				//lblData.text = data[column.dataField]
+			}
+			
+			protected function dataChangeHandler(event:FlexEvent):void
+			{
+				var client:ClientModel = new ClientModel();
+				client.getClientTitle(data[column.dataField],onClientTitle);
+			}
+			
+			protected function onClientTitle(data:ResultSet, token:*):void
+			{
+				var rows:ArrayCollection = data.getRows();
+				if(rows && rows.length != 0)
+				{
+					lblData.text = rows.getItemAt(0).title;
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:Label id="lblData" top="9" left="7"/>
+	
+</s:GridItemRenderer>

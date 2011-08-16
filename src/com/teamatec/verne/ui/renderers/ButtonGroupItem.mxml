@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				xmlns:s="library://ns.adobe.com/flex/spark" 
+				xmlns:mx="library://ns.adobe.com/flex/mx" 
+				autoDrawBackground="true" dataChange="dataChangeHandler(event)"  width="30" height="20">
+	<fx:Script>
+		<![CDATA[
+			import mx.events.FlexEvent;
+			
+			protected function dataChangeHandler(event:FlexEvent):void
+			{
+				if(data.last)
+				{
+					border.visible = false;
+				}
+				toolTip = data.label;
+				icon.source = data.icon;
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:Rect left="0" width="1" height="100%" id="border">
+		<s:fill>
+			<s:SolidColor color="0x929292"/>
+		</s:fill>
+	</s:Rect>
+	<s:BitmapImage id="icon" width="20" height="20" horizontalCenter="0" verticalCenter="0"/>
+</s:ItemRenderer>

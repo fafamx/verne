@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				xmlns:s="library://ns.adobe.com/flex/spark" 
+				xmlns:mx="library://ns.adobe.com/flex/mx" 
+				autoDrawBackground="false" xmlns:components="com.teamatec.verne.ui.components.*"
+				dataChange="dataChangeHandler(event)">
+	<fx:Declarations>
+		<s:NumberFormatter id="money" groupingSeparator=","/>
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			import com.teamatec.utils.NumberUtil;
+			
+			import mx.events.FlexEvent;
+			
+			protected function dataChangeHandler(event:FlexEvent):void
+			{
+				index.text = (itemIndex+1).toString();
+				if(!data) return; 
+				serial.text = NumberUtil.zeroPad(data.serial,6);
+				title.text = data.title;
+				total.text = money.format(data.total);
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:HGroup width="100%" gap="-1" verticalAlign="contentJustify">
+		
+		<components:FlowItem id="index" text="10" width="50"/>
+		<components:FlowItem id="serial" text="12453" width="100"/>
+		<components:FlowItem id="title" align="justify" text="تست" width="100%"/>
+		<components:FlowItem id="total" text="123456789" width="100"/>
+		
+	</s:HGroup>
+	
+</s:ItemRenderer>

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx">
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			public function set text(value:String):void
+			{
+				labelDisplay.text = value;
+			}
+			
+			public function get text():String
+			{
+				return labelDisplay.text;
+			}
+			
+			public function set padding(value:uint):void
+			{
+				labelDisplay.setStyle("paddingBottom",value);
+				labelDisplay.setStyle("paddingTop",value);
+			}
+		]]>
+	</fx:Script>
+	<!--- Defines the appearance of the Form class's background. -->
+	<s:Rect id="background" left="0" right="0" top="0" bottom="0">
+		<s:fill>
+			<!--- @private -->
+			<s:BitmapFill id="bgFill" source="@Embed('resources/images/stripe.png')" fillMode="repeat" smooth="true" rotation="90"/>
+		</s:fill>
+	</s:Rect>
+	<s:Rect left="0" right="0" height="1" bottom="0">
+		<s:fill>
+			<!--- @private -->
+			<s:SolidColor color="#dddddd"/>
+		</s:fill>
+	</s:Rect>
+	<s:Rect left="0" right="0" height="1" top="0">
+		<s:fill>
+			<!--- @private -->
+			<s:SolidColor color="#dddddd"/>
+		</s:fill>
+	</s:Rect>	
+	
+	<!--- @copy spark.components.FormHeading#labelDisplay -->
+	<s:Label id="labelDisplay"
+			 left="labelCol:0" right="helpCol:10" top="row1:10" bottom="row1:10" paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5">
+		<s:filters>
+			<s:DropShadowFilter distance="1" quality="3" blurX="0" blurY="0" color="0xffffff"/>
+		</s:filters>
+	</s:Label>
+</s:Group>

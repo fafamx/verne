@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:GridItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					xmlns:s="library://ns.adobe.com/flex/spark" 
+					xmlns:mx="library://ns.adobe.com/flex/mx" clipAndEnableScrolling="true" creationComplete="creationCompleteHandler(event)">
+	
+	<fx:Script>
+		<![CDATA[
+			import com.greensock.TweenMax;
+			import com.teamatec.verne.models.AbstractModel;
+			import com.teamatec.verne.ui.elements.AbstractView;
+			import com.teamatec.verne.ui.elements.forms.AbstractForm;
+			import com.teamatec.verne.ui.elements.grids.AbstractGrid;
+			
+			import mx.core.UIComponent;
+			import mx.events.FlexEvent;
+			protected var itemToColor:Dictionary;
+			protected var abstractGrid:AbstractGrid;
+			public var deleteConfirmed:Boolean = false;
+			
+			override public function prepare(hasBeenRecycled:Boolean):void {
+				//lblData.text = data[column.dataField];
+				column.headerText = "";
+			}
+			
+			public function iconize(item:UIComponent):void
+			{
+				item.buttonMode = true;
+				item.addEventListener(MouseEvent.ROLL_OVER,rollOver);
+				item.addEventListener(MouseEvent.ROLL_OUT,rollOut);
+			}
+			
+			protected function rollOver(event:MouseEvent):void
+			{
+				TweenMax.to(event.target, .5, {colorTransform:{tint:itemToColor[event.target], tintAmount:1}});
+			}
+			
+			protected function rollOut(event:MouseEvent):void
+			{
+				TweenMax.to(event.target, .5, {colorTransform:{tint:0xff0000, tintAmount:0}});
+			}
+			
+			protected function creationCompleteHandler(event:FlexEvent):void
+			{
+				itemToColor = new Dictionary();
+				itemToColor[deleteButton] = 0xff0000;
+				itemToColor[editButton] = 0x00d8ff;
+				iconize(deleteButton);
+				iconize(editButton);
+			}
+			
+			protected function deleteButton_clickHandler(event:MouseEvent):void
+			{
+				abstractGrid = AbstractView.gridToAbstract[grid.dataGrid];
+				
+				if(abstractGrid && abstractGrid.model)
+				{
+					if(!deleteConfirmed)
+					{
+						Verne.applicationInterface.deleteConfirm.grid = abstractGrid;
+						Verne.applicationInterface.deleteConfirm.renderer = this;
+						TweenMax.to(Verne.applicationInterface.deleteConfirm,.5,{autoAlpha:1});
+					}
+					else
+					{
+						doRemove(abstractGrid);
+					}
+				}
+			}
+			
+			public function doRemove(abstractGrid:AbstractGrid):void
+			{
+				TweenMax.to(Verne.applicationInterface.deleteConfirm,.5,{autoAlpha:0});
+				abstractGrid.model.deleteRows(column.dataField +" = " + data[column.dataField]);
+				try
+				{
+					grid.dataProvider.removeItemAt(rowIndex);
+				}
+				catch(e:*)
+				{
+					
+				}
+				abstractGrid.model.countRows();
+			}
+			
+			protected function editButton_clickHandler(event:MouseEvent):void
+			{
+				abstractGrid = AbstractView.gridToAbstract[grid.dataGrid];
+				if(abstractGrid && abstractGrid.model)
+				{
+					abstractGrid.currentState = "form";
+					var form:AbstractForm = abstractGrid["form"];
+					form.updateData = data;
+					form.creationCompleteHandler(null);
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	<s:HGroup verticalCenter="0" horizontalCenter="0" verticalAlign="middle">
+		<s:Image id="deleteButton" source="@Embed('resources/images/delete.png')" toolTip="حذف" click="deleteButton_clickHandler(event)"/>
+		<s:Image id="editButton" source="@Embed('resources/images/edit.png')" toolTip="ویرایش" click="editButton_clickHandler(event)"/>
+	</s:HGroup>
+</s:GridItemRenderer>
