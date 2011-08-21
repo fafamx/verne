@@ -14,7 +14,10 @@
 			
 			protected function dataChangeHandler(event:FlexEvent):void
 			{
-				check.selected = data[column.dataField];
+				if(data)
+				{
+					check.selected = data[column.dataField];
+				}
 			}
 			
 			protected function check_changeHandler(event:Event):void

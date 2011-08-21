@@ -22,9 +22,11 @@
 			import com.teamatec.verne.ui.elements.grids.AbstractGrid;
 			import com.teamatec.verne.ui.elements.grids.FactorsGrid;
 			import com.teamatec.verne.ui.popups.FactorItemsPopup;
+			import com.teamatec.verne.ui.popups.ReturnFactorItemsPopup;
 			import com.teamatec.verne.ui.templates.AbstractTemplate;
 			
 			import mx.collections.ArrayCollection;
+			import mx.collections.IList;
 			import mx.core.UIComponent;
 			import mx.effects.Sequence;
 			import mx.events.FlexEvent;
@@ -35,7 +37,8 @@
 			protected var factorData:ArrayCollection;
 			protected var sequence_id:String;
 			protected var last:String;
-			
+			public static var me:FactorActionsRenderer;
+			public var selectedItems:IList;
 			
 			override public function prepare(hasBeenRecycled:Boolean):void {
 				//lblData.text = data[column.dataField];
@@ -164,7 +167,15 @@
 			{
 				abstractGrid = AbstractView.gridToAbstract[grid.dataGrid];
 				var id:String = data[column.dataField];
-				
+				selectedItems = null;
+				me = this;
+				var items:ReturnFactorItemsPopup = new ReturnFactorItemsPopup();
+				items.factor = id;
+				abstractGrid.addElement(items);
+			}
+			
+			public function startReturn():void
+			{
 				var sequence:SequenceModel = new SequenceModel();
 				sequence.selectALL(onSequence," WHERE title ='فاکتور مرجوعی'");
 			}
@@ -178,7 +189,7 @@
 					sequence_id = item.sequence_id;
 					var serial:String = String(item.value + 1);
 					var model:FactorModel = new FactorModel();
-					model.insert([sequence_id,"فاکتور مرجوعی","",data.company_id,data.client_id,serial,DateUtil.getMySQLDate(new Date()),data.total,data.is_cash,data.factor_condition,data.discount,data.tax]);
+					model.insert([sequence_id,"فاکتور مرجوعی فاکتور %f%".split("%f%").join(NumberUtil.zeroPad(data.serial.toString(),6)),"",data.company_id,data.client_id,serial,DateUtil.getMySQLDate(new Date()),data.total,data.is_cash,data.factor_condition,data.discount,data.tax]);
 					model.lastInsertedId(lastInsertedId,"factor_id")
 				}
 				else
@@ -191,20 +202,24 @@
 			{
 				last = result.getRows()[0].last;
 				var itemsModel:ItemsModel = new ItemsModel();
-				itemsModel.selectALL(allProducts," WHERE factor_id = "+data.factor_id);
+				//itemsModel.selectALL(allProducts," WHERE factor_id = "+data.factor_id);
+				allProducts();
 			}
 			
-			protected function allProducts(data:ResultSet, token:MySqlToken):void
+			protected function allProducts():void
 			{
-				var items:ArrayCollection = data.getRows();
+				var items:ArrayCollection = selectedItems as ArrayCollection;
 				var productModel:ProductModel = new ProductModel();
 				var item:Object;
 				var itemsModel:ItemsModel = new ItemsModel();
 				for(var i:uint = 0;i<items.length;i++)
 				{
 					item = items.getItemAt(i);
-					productModel.addStorage(item.count*2,item.product_id);
-					itemsModel.insert([last,item.product_id,item.description,item.count,item.tax,item.discount]);
+					if(item.selected == true)
+					{
+						productModel.addStorage(item.count*2,item.product_id);
+						itemsModel.insert([last,item.product_id,item.description,item.count,item.tax,item.discount]);
+					}
 				}
 				abstractGrid.selectData();
 			}

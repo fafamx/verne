@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<popups:AbstractPopup xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					  xmlns:s="library://ns.adobe.com/flex/spark" 
+					  xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:popups="com.teamatec.verne.ui.popups.*"  left="10" right="10" top="10" bottom="10" title="فهرست اقلام فاکتور جهت مرجوعی" xmlns:components="com.teamatec.verne.ui.components.*" creationComplete="creationCompleteHandler(event)">
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			import com.maclema.mysql.MySqlToken;
+			import com.maclema.mysql.ResultSet;
+			import com.teamatec.verne.models.AbstractModel;
+			import com.teamatec.verne.models.ItemsModel;
+			import com.teamatec.verne.ui.elements.grids.FactorsGrid;
+			import com.teamatec.verne.ui.renderers.FactorActionsRenderer;
+			
+			import flash.utils.setTimeout;
+			
+			import mx.collections.ArrayCollection;
+			import mx.collections.IList;
+			import mx.events.FlexEvent;
+			
+			import spark.events.GridItemEditorEvent;
+			private var factorId:String;
+			protected var factorItems:ArrayCollection;
+			
+			public var model:ItemsModel;
+			public static var currentPopup:AbstractPopup;
+			
+			public function creationCompleteHandler(event:FlexEvent):void
+			{
+				if(!model)
+				{
+					model = new ItemsModel();
+				}
+			}
+			
+			public function set factor(value:String):void
+			{
+				currentPopup = this;
+				factorId = value;
+				model = new ItemsModel();
+				selectData();
+			}
+			
+			public function get factor():String
+			{
+				return factorId;
+			}
+			
+			public function selectData():void
+			{
+				model.selectALL(contentReady," WHERE items.factor_id = "+factor);
+			}
+			
+			protected function contentReady(data:ResultSet, token:MySqlToken):void
+			{ 
+				factorItems = data.getRows();
+				grid.dataProvider = factorItems;
+			}
+			
+			protected function grid_gridItemEditorSessionSaveHandler(event:GridItemEditorEvent):void
+			{
+				
+			}
+			
+			protected function close_clickHandler(event:MouseEvent):void
+			{
+				FactorActionsRenderer.me.selectedItems = grid.dataProvider;
+				FactorActionsRenderer.me.startReturn();
+				FactorsGrid.factorItem.removeElement(this);
+			}
+			
+			protected function selectAll_clickHandler(event:MouseEvent):void
+			{
+				var lastGridData:IList = grid.dataProvider;
+				grid.dataProvider = null;
+				
+				var data:ArrayCollection = new ArrayCollection();
+				for(var i:uint = 0;i <lastGridData.length;i++)
+				{
+					var itemData:Object = lastGridData.getItemAt(i);
+					itemData.selected = true;
+					data.addItem(itemData);
+				}
+				
+				grid.dataProvider = data;
+			}
+			
+		]]>
+	</fx:Script>
+	<s:VGroup width="100%" height="100%" paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5">
+		<s:HGroup>
+			<!--<components:IconButton id="selectAll" label="انتخاب همه" click="selectAll_clickHandler(event)"/>-->
+			<components:IconButton id="close" label="پایان" click="close_clickHandler(event)"/>
+		</s:HGroup>
+		<s:DataGrid id="grid" width="100%" height="100%" editable="true" variableRowHeight="true" gridItemEditorSessionSave="grid_gridItemEditorSessionSaveHandler(event)">
+			<s:columns>
+				<s:ArrayList>
+					<s:GridColumn dataField="selected" editable="false" headerText="انتخاب" width="50" itemRenderer="com.teamatec.verne.ui.renderers.CheckBoxItemRenderer"/>
+					<s:GridColumn dataField="title" headerText="محصول یا خدمات" width="150"/>
+					<s:GridColumn dataField="description" headerText="توضیحات"/>
+					<s:GridColumn dataField="count" width="70" headerText="تعداد" editable="true"/>
+					<s:GridColumn dataField="tax" width="70" headerText="مالیات"/>
+					<s:GridColumn dataField="discount" width="70" headerText="تخفیف"/>
+				</s:ArrayList>
+			</s:columns>
+		</s:DataGrid>
+	</s:VGroup>
+</popups:AbstractPopup>
