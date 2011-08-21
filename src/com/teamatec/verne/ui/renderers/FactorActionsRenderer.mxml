@@ -178,7 +178,7 @@
 					sequence_id = item.sequence_id;
 					var serial:String = String(item.value + 1);
 					var model:FactorModel = new FactorModel();
-					model.insert([sequence_id,"فاکتور مرجوعی","",data.company_id,data.client_id,serial,DateUtil.getMySQLDate(new Date()),data.total,data.is_chash,data.factor_condition,data.discount,data.tax]);
+					model.insert([sequence_id,"فاکتور مرجوعی","",data.company_id,data.client_id,serial,DateUtil.getMySQLDate(new Date()),data.total,data.is_cash,data.factor_condition,data.discount,data.tax]);
 					model.lastInsertedId(lastInsertedId,"factor_id")
 				}
 				else
