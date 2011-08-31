@@ -130,6 +130,7 @@ package com.teamatec.verne.models
 		public function lastInsertedId(callback:Function,key:String):void
 		{
 			var statement:Statement = connection.createStatement();
+			
 			statement.sql = "SELECT max("+key+") as last FROM "+table;
 			MonsterDebugger.trace(this,statement.sql);
 			var token:MySqlToken = statement.executeQuery();

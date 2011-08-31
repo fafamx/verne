@@ -6,7 +6,10 @@
 		 creationCompleteEffect="{fadeIn}" stateChangeComplete="stateChangeCompleteHandler(event)" alpha="0">
 	<fx:Declarations>
 		<s:Fade id="fadeIn" alphaFrom="0" alphaTo="1" duration="500" startDelay="500"/>
-		<s:NumberFormatter id="formatter" decimalSeparator=","/>
+		<!--<s:NumberFormatter id="formatter" decimalSeparator=","/>-->
+		<mx:NumberFormatter id="formatter" precision="0"
+							rounding="up" decimalSeparatorTo="." thousandsSeparatorTo=","
+							useThousandsSeparator="true" useNegativeSign="true" />
 	</fx:Declarations>
 	<fx:Script>
 		<![CDATA[

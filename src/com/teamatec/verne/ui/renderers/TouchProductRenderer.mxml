@@ -5,9 +5,12 @@
 				autoDrawBackground="false" width="100" height="130" dataChange="dataChangeHandler(event)" click="clickHandler(event)" buttonMode="true">
 	<fx:Script>
 		<![CDATA[
+			import com.demonsters.debugger.MonsterDebugger;
 			import com.greensock.TweenMax;
+			import com.greensock.TweenNano;
 			
 			import mx.collections.ArrayCollection;
+			import mx.collections.IList;
 			import mx.events.FlexEvent;
 			
 			import spark.components.List;
@@ -40,25 +43,29 @@
 			{
 				if(data.storage <= 0)
 				{
-					alpha = .5;
-				}
-				else
-				{
-					alpha = 1;
-				}
-				
-				if(data.storage <= 0)
-				{
 					return;
 				}
 				
+				data.storage -=1;
+				storageDisplay.text = data.storage;
+				if(data.storage <= 0)
+				{
+					TweenNano.to(this,0.3,{alpha : 0.5});
+					
+				}
+				else
+				{
+					TweenNano.to(this,0.3,{alpha : 1});
+				}
 				
+				
+				
+				var products : IList =  Verne.applicationInterface.factors.fastForm.products.dataProvider;
 				var selected:ArrayCollection = Verne.applicationInterface.factors.fastForm.selected;
 				
 				if(data.selected)
 				{
-					data.storage -=1;
-					
+					var id : String = data.product_id;
 					if(data.storage == 0)
 					{
 						selected.removeItemAt(itemIndex);
@@ -66,12 +73,33 @@
 					
 					Verne.applicationInterface.factors.fastForm.selectedProducts.dataProvider = null;
 					Verne.applicationInterface.factors.fastForm.selectedProducts.dataProvider = selected;
+					
+					for(var i : uint= 0;i<products.length;i++)
+					{
+						var selectedItem:Object = products.getItemAt(i);
+						
+						if(id == selectedItem.product_id)
+						{
+							selectedItem.storage +=1;
+							break;
+						}
+						
+					}
+					Verne.applicationInterface.factors.fastForm.products.layout.horizontalScrollPosition = 100;
+					var position : Number = Verne.applicationInterface.factors.fastForm.products.scroller.viewport.horizontalScrollPosition;
+					Verne.applicationInterface.factors.fastForm.products.dataProvider = null;
+					Verne.applicationInterface.factors.fastForm.products.dataProvider = products;
+					trace(Verne.applicationInterface.factors.fastForm.products.layout.horizontalScrollPosition , position);
+					Verne.applicationInterface.factors.fastForm.products.layout.horizontalScrollPosition = position+1000;
+					trace(Verne.applicationInterface.factors.fastForm.products.layout.horizontalScrollPosition);
 					return;
+					
 				}
-				
-				for(var i:uint = 0;i<selected.length;i++)
+				/* for(var i:uint = 0;i<selected.length;i++)
 				{
-					var selectedItem:Object = selected.getItemAt(i);
+					selectedItem = selected.getItemAt(i);
+					
+					
 					if(data.product_id == selectedItem.product_id)
 					{
 						if(data.storage == selectedItem.storage)
@@ -83,12 +111,39 @@
 						selectedItem.storage +=1;
 						Verne.applicationInterface.factors.fastForm.selectedProducts.dataProvider = null;
 						Verne.applicationInterface.factors.fastForm.selectedProducts.dataProvider = selected;
+						return; 
+					}
+				} */
+				
+				
+				/* for(i = 0;i<products.length;i++)
+				{
+					selectedItem = products.getItemAt(i);
+					
+					
+					if(data.product_id == selectedItem.product_id)
+					{
+						trace(data.product_id , "<<<<");
 						return;
 					}
-				}
+				} */
 				
 				if(!data.selected)
 				{
+					for(i = 0;i<selected.length;i++)
+					{
+						selectedItem = selected.getItemAt(i);
+						
+						
+						if(data.product_id == selectedItem.product_id)
+						{
+							selectedItem.storage +=1;
+							trace(Verne.applicationInterface.factors.fastForm.selectedProducts.scroller.viewport.horizontalScrollPosition)
+							Verne.applicationInterface.factors.fastForm.selectedProducts.dataProvider = null;
+							Verne.applicationInterface.factors.fastForm.selectedProducts.dataProvider = selected;
+							return; 
+						}
+					} 
 					item = {product_id:data.product_id,photo:String(bitmap.source),title:data.title,storage:1,selected:true,item:this,sell_price:data.sell_price};
 					selected.addItem(item);
 				}
@@ -116,7 +171,7 @@
 	</s:Rect>
 	<s:VGroup width="100%" horizontalAlign="center" verticalCenter="0" horizontalCenter="0">
 		<s:Label id="labelDisplay" width="80" textAlign="center"/>
-		<s:Label id="storageDisplay" fontSize="15" color="0x666666"/>
+		<s:Label id="storageDisplay" fontSize="15" color="0x666666" />
 		<s:Image id="bitmap" width="64" height="64" fillMode="scale" smooth="true" smoothingQuality="high">
 			<s:filters>
 				<s:DropShadowFilter distance="1" quality="3"/>

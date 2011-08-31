@@ -4,7 +4,10 @@
 				xmlns:mx="library://ns.adobe.com/flex/mx" 
 				autoDrawBackground="false" xmlns:components="com.teamatec.verne.ui.components.*" dataChange="dataChangeHandler(event)">
 	<fx:Declarations>
-		<s:NumberFormatter id="money" groupingSeparator=","/>
+		<!--<s:NumberFormatter id="money" groupingSeparator=","/>-->
+		<mx:NumberFormatter id="money" precision="0"
+							rounding="up" decimalSeparatorTo="." thousandsSeparatorTo=","
+							useThousandsSeparator="true" useNegativeSign="true" />
 	</fx:Declarations>
 	<fx:Script>
 		<![CDATA[

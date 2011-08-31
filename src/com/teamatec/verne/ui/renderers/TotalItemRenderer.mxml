@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:GridItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					xmlns:s="library://ns.adobe.com/flex/spark" 
+					xmlns:mx="library://ns.adobe.com/flex/mx" 
+					clipAndEnableScrolling="true" >
+	<fx:Declarations>
+		<mx:NumberFormatter id="money" precision="0"
+							rounding="up" decimalSeparatorTo="." thousandsSeparatorTo=","
+							useThousandsSeparator="true" useNegativeSign="true" />
+	</fx:Declarations>
+	<s:Label text="{money.format(uint(data.total)) }" verticalCenter="0" horizontalCenter="0"/>
+	
+</s:GridItemRenderer>

@@ -20,7 +20,7 @@
 				if(date)
 				{
 					var shamsiDate:Vector.<uint> = Converter.changeMToSh(date.getFullYear(),date.getMonth()+1,date.getDate());
-					lblData.text = shamsiDate[0]+"-"+NumberUtil.digital(shamsiDate[1])+"-"+NumberUtil.digital(shamsiDate[2]);
+					lblData.text = shamsiDate[0]+"/"+NumberUtil.digital(shamsiDate[1])+"/"+NumberUtil.digital(shamsiDate[2]);
 				}
 			}
 			

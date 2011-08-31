@@ -5,6 +5,7 @@
 	
 	<fx:Script>
 		<![CDATA[
+			import com.demonsters.debugger.MonsterDebugger;
 			import com.greensock.TweenMax;
 			import com.maclema.mysql.MySqlToken;
 			import com.maclema.mysql.ResultSet;
@@ -147,7 +148,7 @@
 			protected function onItems(result:ResultSet, token:MySqlToken):void
 			{
 				factorModel.items = result.getRows();
-				trace(factorModel.items);
+				
 			}
 			
 			protected function normalPrintButton_clickHandler(event:MouseEvent):void
@@ -177,7 +178,7 @@
 			public function startReturn():void
 			{
 				var sequence:SequenceModel = new SequenceModel();
-				sequence.selectALL(onSequence," WHERE title ='فاکتور مرجوعی'");
+				sequence.selectALL(onSequence," WHERE title ='فاکتور مرجوعی'"); 
 			}
 			
 			protected function onSequence(result:ResultSet, token:MySqlToken):void
@@ -189,8 +190,14 @@
 					sequence_id = item.sequence_id;
 					var serial:String = String(item.value + 1);
 					var model:FactorModel = new FactorModel();
+					
+					var sequence:SequenceModel = new SequenceModel();
+					sequence.plusPlus(sequence_id);
+					
 					model.insert([sequence_id,"فاکتور مرجوعی فاکتور %f%".split("%f%").join(NumberUtil.zeroPad(data.serial.toString(),6)),"",data.company_id,data.client_id,serial,DateUtil.getMySQLDate(new Date()),data.total,data.is_cash,data.factor_condition,data.discount,data.tax]);
 					model.lastInsertedId(lastInsertedId,"factor_id")
+						
+					abstractGrid.model.countRows();
 				}
 				else
 				{

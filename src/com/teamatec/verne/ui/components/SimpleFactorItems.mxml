@@ -2,8 +2,13 @@
 <s:VGroup xmlns:fx="http://ns.adobe.com/mxml/2009" 
 		 xmlns:s="library://ns.adobe.com/flex/spark" 
 		 xmlns:mx="library://ns.adobe.com/flex/mx" width="100%" gap="-1"  fontSize="9" xmlns:components="com.teamatec.verne.ui.components.*" variableRowHeight="true">
-	<fx:Declarations>
+	<!--<fx:Declarations>
 		<s:NumberFormatter id="money" groupingSeparator=","/>
+	</fx:Declarations>-->
+	<fx:Declarations>
+		<mx:NumberFormatter id="money" precision="0"
+							rounding="up" decimalSeparatorTo="." thousandsSeparatorTo=","
+							useThousandsSeparator="true" useNegativeSign="true" />
 	</fx:Declarations>
 	<fx:Script>
 		<![CDATA[

@@ -10,13 +10,18 @@
 			import com.maclema.mysql.MySqlToken;
 			import com.maclema.mysql.ResultSet;
 			import com.shortybmc.data.parser.CSV;
+			import com.teamatec.utils.NumberUtil;
 			import com.teamatec.verne.models.*;
 			
 			import flash.utils.setTimeout;
 			
+			import mx.collections.ArrayCollection;
 			import mx.events.FlexEvent;
 			
+			import spark.events.TextOperationEvent;
+			
 			protected var excel:XLSXLoader;
+			private var gridData : ArrayCollection;
 			
 			public override function creationCompleteHandler(event:FlexEvent):void
 			{
@@ -38,7 +43,8 @@
 			
 			protected function contentReady(data:ResultSet, token:MySqlToken):void
 			{
-				grid.dataProvider = data.getRows();
+				gridData = data.getRows();
+				grid.dataProvider = gridData;
 			}
 			
 			protected function excel_clickHandler(event:MouseEvent):void
@@ -50,6 +56,7 @@
 			
 			protected function fileSelected(event:Event):void
 			{
+				filter.text = "";
 				var file:File = event.target as File;
 				excel = new XLSXLoader();
 				excel.load(file.url);
@@ -82,6 +89,23 @@
 				
 			}
 			
+			protected function filter_changeHandler(event:TextOperationEvent):void
+			{
+				var data:ArrayCollection = new ArrayCollection();
+				for(var i:uint = 0;i<gridData.length;i++)
+				{
+					
+					var item:Object = gridData.getItemAt(i);
+					if(item.title && String(item.title).indexOf(NumberUtil.internationalizeNumbers(filter.text)) != -1)
+					{
+						data.addItem(item);
+					}
+				}
+				grid.dataProvider = data;
+				// TODO Auto-generated method stub
+			}
+			
+
 		]]>
 	</fx:Script>
 	<fx:Declarations>
@@ -96,7 +120,10 @@
 		<s:Group width="100%">
 			<components:PageHeader width="100%" text="فهرست مشتریان و کارفرمایان"/>
 			<s:Label id="count" verticalCenter="0" right="5" color="0x999999"/>
-			<components:IconButton id="excelImport" label="ورود از Excel" click="excel_clickHandler(event)" verticalCenter="0" horizontalCenter="0" />
+			<s:HGroup horizontalCenter="0" verticalCenter="0" verticalAlign="middle">
+				<s:TextInput width="150" verticalCenter="0" textAlign="center" id="filter" change="filter_changeHandler(event)"/>
+				<components:IconButton id="excelImport" label="ورود از Excel" click="excel_clickHandler(event)" verticalCenter="0" />
+			</s:HGroup>
 		</s:Group>
 		<s:DataGrid id="grid" width="100%" height="100%">
 			<s:columns>

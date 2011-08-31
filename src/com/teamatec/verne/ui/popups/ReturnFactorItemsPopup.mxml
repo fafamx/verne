@@ -87,12 +87,20 @@
 				grid.dataProvider = data;
 			}
 			
+
+			protected function cancel_clickHandler(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				FactorsGrid.factorItem.removeElement(this);
+			}
+
 		]]>
 	</fx:Script>
 	<s:VGroup width="100%" height="100%" paddingBottom="5" paddingLeft="5" paddingRight="5" paddingTop="5">
 		<s:HGroup>
 			<!--<components:IconButton id="selectAll" label="انتخاب همه" click="selectAll_clickHandler(event)"/>-->
 			<components:IconButton id="close" label="پایان" click="close_clickHandler(event)"/>
+			<components:IconButton id="cancel" label="انصراف" click="cancel_clickHandler(event)"/>
 		</s:HGroup>
 		<s:DataGrid id="grid" width="100%" height="100%" editable="true" variableRowHeight="true" gridItemEditorSessionSave="grid_gridItemEditorSessionSaveHandler(event)">
 			<s:columns>

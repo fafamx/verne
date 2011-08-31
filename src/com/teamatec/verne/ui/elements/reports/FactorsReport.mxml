@@ -6,7 +6,10 @@
 		<mx:SeriesInterpolate id="seriesInterpolate" duration="1000" />
 		<mx:SeriesSlide id="seriesSlide" duration="1000" direction="right" />
 		<mx:SeriesZoom id="seriesZoom" duration="1000" />
-		<s:NumberFormatter id="money" groupingSeparator=","/>
+		<!--<s:NumberFormatter id="money" groupingSeparator=","/>-->
+		<mx:NumberFormatter id="money" precision="0"
+							rounding="up" decimalSeparatorTo="." thousandsSeparatorTo=","
+							useThousandsSeparator="true" useNegativeSign="true" />
 	</fx:Declarations>
 	<fx:Script>
 		<![CDATA[
