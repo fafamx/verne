@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <grids:AbstractGrid xmlns:fx="http://ns.adobe.com/mxml/2009" 
 					xmlns:s="library://ns.adobe.com/flex/spark" 
-					xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:grids="com.teamatec.verne.ui.elements.grids.*" width="100%" height="100%" creationComplete="creationCompleteHandler(event)" xmlns:components="com.teamatec.verne.ui.components.*" xmlns:forms="com.teamatec.verne.ui.elements.forms.*">
+					xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:grids="com.teamatec.verne.ui.elements.grids.*" width="100%" height="100%" creationComplete="creationCompleteHandler(event)" xmlns:components="com.teamatec.verne.ui.components.*" xmlns:forms="com.teamatec.verne.ui.elements.forms.*" xmlns:reports="com.teamatec.verne.ui.elements.reports.*">
 	<fx:Script>
 		<![CDATA[
 			import com.maclema.mysql.MySqlToken;
@@ -63,8 +63,10 @@
 	<grids:states>
 		<s:State name="grid"/>
 		<s:State name="form"/>
+		<s:State name="report"/>
 	</grids:states>
 	<forms:ProductsForm id="form" width="100%" height="100%" includeIn="form" currentView="{this}"/>
+	<reports:ProductsReport id="report" width="100%" height="100%" includeIn="report"/>
 	<s:VGroup left="0" right="0" top="0" bottom="0" includeIn="grid">
 		<s:Group width="100%">
 			<components:PageHeader width="100%" text="فهرست محصولات و خدمات"/>

@@ -51,17 +51,16 @@
 					sql += " and type="+type;
 				}
 				
-				/* if(sidebar.company_id.selectedIndex != -1)
+				
+				if(sidebar.company_id.selectedIndex != -1)
 				{
-					sql += " and company_title='"+String(sidebar.company_id.selectedItem.label)+"'";
+					sql += " and factors.company_id='"+String(sidebar.company_id.selectedItem.value)+"'";
 				}
 				
 				if(sidebar.client_id.selectedIndex != -1)
 				{
-					sql += " and client_title='"+String(sidebar.client_id.selectedItem.label)+"'";
+					sql += " and factors.client_id='"+String(sidebar.client_id.selectedItem.value)+"'";
 				}
-				
-				trace(sql); */
 				
 				model.selectALL(selecteAllComplete,sql);
 				
@@ -69,9 +68,10 @@
 			
 			public function selecteAllComplete(data:ResultSet, token:MySqlToken):void
 			{
+				factors.dataProvider = null;
 				factors.dataProvider = data.getRows();
-				trace(factors.dataProvider);
 				var item:Object;
+				trace(factors.dataProvider.length);
 				for(var i:uint = 0;i<factors.dataProvider.length;i++)
 				{
 					item = factors.dataProvider.getItemAt(i);

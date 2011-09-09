@@ -26,7 +26,7 @@ package com.teamatec.utils
 		}
 		
 		public static function zeroPad (number:String, width:int):String {
-			if (number.length < width)
+			if (number && number.length < width)
 				return "0" + zeroPad(number, width-1);
 			return number;
 		}

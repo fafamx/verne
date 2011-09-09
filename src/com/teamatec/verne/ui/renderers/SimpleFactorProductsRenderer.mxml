@@ -65,7 +65,7 @@
 				}
 				count.text = data.count;
 				
-				price.text = money.format(data.sell_price);
+				price.text = money.format(data.price);
 				discount.text = money.format(data.discount);
 				tax.text = money.format(data.tax);
 				totalWithTax.text = money.format(data.totalWithTax);

@@ -74,7 +74,9 @@
 			
 			protected function addFactor(client_id:String):void
 			{
-				model.insert([type,"فاکتور فروش","",company_id,client_id,serial,DateUtil.getMySQLDate(new Date()),"0","1","",NumberUtil.internationalizeNumbers(totalDiscount.text),NumberUtil.internationalizeNumbers(totalTax.text)]);
+				var splitedDate:Array = date.text.split("/");
+				var itemDate:Vector.<uint> = Converter.changeShToM(splitedDate[0],splitedDate[1],splitedDate[2]);
+				model.insert([type,"فاکتور فروش","",company_id,client_id,serial,itemDate.join("-"),"0","1","",NumberUtil.internationalizeNumbers(totalDiscount.text.split(",").join("")),NumberUtil.internationalizeNumbers(totalTax.text.split(",").join("")),'0']);
 				model.lastInsertedId(function(data:ResultSet, token:*):void
 				{
 					var factor_id:String = data.getRows()[0].last;
@@ -89,7 +91,7 @@
 						var price:Number = item.sell_price;
 						var taxValue:Number = price*Number(NumberUtil.internationalizeNumbers(tax.text))/100
 						var discountValue:Number = price*Number(NumberUtil.internationalizeNumbers(discount.text))/100;
-						factorItems.insert([factor_id,item.product_id,"",item.storage,taxValue*Number(item.storage),discountValue*Number(item.storage)]);
+						factorItems.insert([factor_id,item.product_id,"",item.storage,taxValue*Number(item.storage),discountValue*Number(item.storage),price]);
 					}
 				},"factor_id");
 			}
@@ -164,6 +166,10 @@
 				address.text = "";
 				totalDiscount.text = "0";
 				totalTax.text = "0";
+				
+				var today:Date = new Date();
+				var shamsi:Vector.<uint> = Converter.changeMToSh(today.getFullYear(),today.getMonth()+1,today.date);
+				date.text = shamsi.join("/");
 			}
 			
 			protected function sequenceCountComplete(data:ResultSet, token:*):void
@@ -218,12 +224,14 @@
 			protected function totalTax_changeHandler(event:TextOperationEvent):void
 			{
 				totalTax.text = money.format(totalTax.text);
+				totalTax.selectRange(totalTax.text.length,totalTax.text.length);
 			}
 
 
 			protected function totalDiscount_changeHandler(event:TextOperationEvent):void
 			{
 				totalDiscount.text = money.format(totalDiscount.text);
+				totalDiscount.selectRange(totalDiscount.text.length,totalDiscount.text.length);
 			}
 
 		]]>
@@ -245,6 +253,10 @@
 		
 		<s:FormItem label="آدرس" width="100%">
 			<s:TextArea id="address" width="450" height="100"/>
+		</s:FormItem>
+		
+		<s:FormItem label="تاریخ" width="100%">
+			<s:TextInput id="date" width="100" direction="ltr" textAlign="center"/>
 		</s:FormItem>
 		
 		<s:FormItem label="انتخاب کالا" width="100%">

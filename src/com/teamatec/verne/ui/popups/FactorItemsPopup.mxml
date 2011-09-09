@@ -63,7 +63,7 @@
 				}
 				
 				factorItems.addItem({"description":"","count":""});
-				model.insert([factor,0,"",0,0,0]);
+				model.insert([factor,0,"",0,0,0,0]);
 				model.addEventListener(Event.COMPLETE,addComplete);
 				grid.dataProvider = factorItems;
 			}
@@ -88,7 +88,7 @@
 			
 			protected function updateEdited(edited:Object):void
 			{
-				model.update([factor,edited.product_id,edited.description,edited.count,edited.tax,edited.discount],"item_id = "+edited.item_id);
+				model.update([factor,edited.product_id,edited.description,edited.count,edited.tax,edited.discount,edited.price],"item_id = "+edited.item_id);
 			}
 			
 			protected function close_clickHandler(event:MouseEvent):void
@@ -111,6 +111,7 @@
 					<s:GridColumn dataField="count" width="70" headerText="تعداد"/>
 					<s:GridColumn dataField="tax" width="70" headerText="مالیات"/>
 					<s:GridColumn dataField="discount" width="70" headerText="تخفیف"/>
+					<s:GridColumn dataField="price" width="70" headerText="قیمت"/>
 					<s:GridColumn width="70" itemRenderer="com.teamatec.verne.ui.renderers.FactorItemsDeleteRenderer" headerText="" dataField="item_id" editable="false"/>
 				</s:ArrayList>
 			</s:columns>

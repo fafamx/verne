@@ -31,7 +31,7 @@
 				count.text = data.count;
 				unit.text = data.unit;
 				
-				price.text = money.format(data.sell_price);
+				price.text = money.format(data.price);
 				totalPrice.text = money.format(data.total);
 				discount.text = money.format(data.discount);
 				totalWithDiscount.text = money.format(data.totalWithDiscount);

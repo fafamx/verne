@@ -14,13 +14,13 @@ package com.teamatec.verne.models
 		public function FactorModel()
 		{
 			table = "factors";
-			columns =  ["type","title","description","company_id","client_id","serial","factor_date","total","is_cash","factor_condition","discount","tax"];
+			columns =  ["type","title","description","company_id","client_id","serial","factor_date","total","is_cash","factor_condition","discount","tax","status"];
 		}
 		
 		public override function selectALL(callBack:Function, others:String=""):void
 		{
 			var statement:Statement = connection.createStatement();
-			statement.sql = "SELECT *,(select title from clients where clients.client_id=factors.company_id) as company_title,(select title from clients where clients.client_id=factors.client_id) as client_title FROM factors order by factor_id DESC";
+			statement.sql = "SELECT *,(select title from clients where clients.client_id=factors.company_id) as company_title,(select title from clients where clients.client_id=factors.client_id) as client_title FROM factors " + others;
 			var token:MySqlToken = statement.executeQuery();
 			var responder:AsyncResponder = new AsyncResponder(callBack,onFail,token);
 			token.addResponder(responder);
@@ -45,6 +45,14 @@ package com.teamatec.verne.models
 		{
 			var statement:Statement = connection.createStatement();
 			statement.sql = "UPDATE factors SET total = "+value+" where factor_id ="+id;
+			MonsterDebugger.trace(this,statement.sql);
+			var token:MySqlToken = statement.executeQuery();
+		}
+		
+		public function returnFactor(id:String):void
+		{
+			var statement:Statement = connection.createStatement();
+			statement.sql = "UPDATE factors SET status = 1 where factor_id ="+id;
 			MonsterDebugger.trace(this,statement.sql);
 			var token:MySqlToken = statement.executeQuery();
 		}

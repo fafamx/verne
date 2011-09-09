@@ -34,7 +34,7 @@
 					submit.enabled = false;
 					var splitedDate:Array = date.text.split("/");
 					var itemDate:Vector.<uint> = Converter.changeShToM(splitedDate[0],splitedDate[1],splitedDate[2]);
-					var dbData:Array = [type.selectedValue,title.text,description.text,company_id.selectedItem.value,client_id.selectedItem.value,serial.text,itemDate.join("-"),0,is_cash.selectedValue,condition.text,totalDiscount.text,totalTax.text];
+					var dbData:Array = [type.selectedValue,title.text,description.text,company_id.selectedItem.value,client_id.selectedItem.value,serial.text,itemDate.join("-"),0,is_cash.selectedValue,condition.text,totalDiscount.text,totalTax.text,'0'];
 					if(updateData)
 					{
 						model.update(dbData,"factor_id = "+updateData.factor_id);

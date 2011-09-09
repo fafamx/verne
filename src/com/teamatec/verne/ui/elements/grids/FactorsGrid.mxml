@@ -95,7 +95,6 @@
 				var data:ArrayCollection = new ArrayCollection();
 				for(var i:uint = 0;i<gridData.length;i++)
 				{
-				
 					var item:Object = gridData.getItemAt(i);
 					if(item.client_title && String(item.client_title).indexOf(NumberUtil.internationalizeNumbers(filter.text)) != -1)
 					{
@@ -103,7 +102,6 @@
 					}
 				}
 				grid.dataProvider = data;
-				// TODO Auto-generated method stub
 			}
 
 		]]>

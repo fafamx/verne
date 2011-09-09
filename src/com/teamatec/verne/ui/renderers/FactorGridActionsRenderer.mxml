@@ -10,6 +10,7 @@
 			import com.greensock.TweenMax;
 			import com.maclema.mysql.MySqlToken;
 			import com.maclema.mysql.ResultSet;
+			import com.teamatec.verne.models.FactorModel;
 			import com.teamatec.verne.models.ItemsModel;
 			import com.teamatec.verne.models.ProductModel;
 			import com.teamatec.verne.ui.elements.AbstractView;
@@ -50,7 +51,10 @@
 				for(var i:uint = 0;i<items.length;i++)
 				{
 					item = items.getItemAt(i);
-					productModel.addStorage(item.count,item.product_id);
+					if(super.data.status.toString() != '1')
+					{
+						productModel.addStorage(item.count,item.product_id);
+					}
 					itemsModel.deleteRows("item_id = "+item.item_id);
 				}
 				

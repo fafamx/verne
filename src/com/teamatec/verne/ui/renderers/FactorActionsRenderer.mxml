@@ -148,7 +148,6 @@
 			protected function onItems(result:ResultSet, token:MySqlToken):void
 			{
 				factorModel.items = result.getRows();
-				
 			}
 			
 			protected function normalPrintButton_clickHandler(event:MouseEvent):void
@@ -161,6 +160,15 @@
 				if(rowIndex == 0)
 				{
 					FactorsGrid.fastPrintFunction = normalPrintButton_clickHandler;
+				}
+				
+				if(data && data.status.toString() == '1')
+				{
+					returnButton.visible = false;
+				}
+				else
+				{
+					returnButton.visible = true;
 				}
 			}
 			
@@ -192,9 +200,9 @@
 					var model:FactorModel = new FactorModel();
 					
 					var sequence:SequenceModel = new SequenceModel();
-					sequence.plusPlus(sequence_id);
+					sequence.plusPlus(sequence_id.toString());
 					
-					model.insert([sequence_id,"فاکتور مرجوعی فاکتور %f%".split("%f%").join(NumberUtil.zeroPad(data.serial.toString(),6)),"",data.company_id,data.client_id,serial,DateUtil.getMySQLDate(new Date()),data.total,data.is_cash,data.factor_condition,data.discount,data.tax]);
+					model.insert([sequence_id,"فاکتور مرجوعی فاکتور %f%".split("%f%").join(NumberUtil.zeroPad(data.serial.toString(),6)),"",data.company_id,data.client_id,serial,DateUtil.getMySQLDate(new Date()),data.total,data.is_cash,data.factor_condition,data.discount,data.tax,'1']);
 					model.lastInsertedId(lastInsertedId,"factor_id")
 						
 					abstractGrid.model.countRows();
@@ -225,7 +233,7 @@
 					if(item.selected == true)
 					{
 						productModel.addStorage(item.count*2,item.product_id);
-						itemsModel.insert([last,item.product_id,item.description,item.count,item.tax,item.discount]);
+						itemsModel.insert([last,item.product_id,item.description,item.count,item.tax,item.discount,item.price]);
 					}
 				}
 				abstractGrid.selectData();

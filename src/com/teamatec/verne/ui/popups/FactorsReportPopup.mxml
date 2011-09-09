@@ -58,15 +58,15 @@
 				sequence.selectALL(allSequences);
 				
 				var client:ClientModel = new ClientModel();
-				//client.selectALL(allClients);
+				client.selectALL(allClients);
 			}
 			
 			public function allClients(data:ResultSet, token:*):void
 			{
 				var items:ArrayCollection = data.getRows();
 				var companies:ArrayCollection = new ArrayCollection();
-				/* company_id.dataProvider = companies;
-				client_id.dataProvider = companies; */
+				company_id.dataProvider = companies;
+				client_id.dataProvider = companies;
 				for(var i:uint=0;i<items.length;i++)
 				{
 					var item:Object = items.getItemAt(i);
@@ -87,10 +87,10 @@
 		<s:Label text="تاریخ پایان :" width="100%"/>
 		<s:TextInput id="endDate" width="100%" direction="ltr" textAlign="center"/>
 		<s:VGroup id="factorSequence" width="100%" height="100%"/>
-		<!--<s:Label text="فروشنده :" width="100%"/>
+		<s:Label text="فروشنده :" width="100%"/>
 		<s:ComboBox id="company_id" width="100%"/>
 		<s:Label text="خریدار :" width="100%"/>
-		<s:ComboBox id="client_id" width="100%"/>-->
+		<s:ComboBox id="client_id" width="100%"/>
 		<components:IconButton id="generate" label="بروز رسانی" click="generate_clickHandler(event)"/>
 	</s:VGroup>
 </popups:AbstractReportPopup>

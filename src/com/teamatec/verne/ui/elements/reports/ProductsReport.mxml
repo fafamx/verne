@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<reports:AbstractReport xmlns:fx="http://ns.adobe.com/mxml/2009" 
+						xmlns:s="library://ns.adobe.com/flex/spark" 
+						xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:reports="com.teamatec.verne.ui.elements.reports.*" xmlns:components="com.teamatec.verne.ui.components.*">
+	<fx:Declarations>
+		<mx:SeriesInterpolate id="seriesInterpolate" duration="1000" />
+		<mx:SeriesSlide id="seriesSlide" duration="1000" direction="right" />
+		<mx:SeriesZoom id="seriesZoom" duration="1000" />
+		<!--<s:NumberFormatter id="money" groupingSeparator=","/>-->
+		<mx:NumberFormatter id="money" precision="0"
+							rounding="up" decimalSeparatorTo="." thousandsSeparatorTo=","
+							useThousandsSeparator="true" useNegativeSign="true" />
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			import com.maclema.mysql.MySqlToken;
+			import com.maclema.mysql.ResultSet;
+			import com.teamatec.verne.models.FactorModel;
+			import com.teamatec.verne.models.ProductModel;
+			import com.teamatec.verne.models.SMSModel;
+			import com.teamatec.verne.ui.elements.ApplicationInterface;
+			import com.teamatec.verne.ui.popups.FactorsReportPopup;
+			
+			import mx.collections.ArrayCollection;
+			import mx.utils.StringUtil;
+			
+			[Bindable]
+			protected var daysFactors:ArrayCollection;
+			
+			[Bindable]
+			protected var totalSum:uint = 0;
+			
+			
+			protected var model:ProductModel;
+			
+			public override function buildReport():void
+			{
+				super.buildReport();
+				totalSum = 0;
+				
+				model = new ProductModel();
+				
+				model.selectALL(selecteAllComplete);
+				
+			}
+			
+			public function selecteAllComplete(data:ResultSet, token:MySqlToken):void
+			{
+				items.dataProvider = null;
+				items.dataProvider = data.getRows();
+				var item:Object;
+				for(var i:uint = 0;i<items.dataProvider.length;i++)
+				{
+					item = items.dataProvider.getItemAt(i);
+					totalSum += item.total;
+				}
+			}
+			
+			public function chartData(data:ResultSet, token:MySqlToken):void
+			{
+				daysFactors = data.getRows();
+			}
+			
+			private function pieSeries_labelFunc(item:Object, field:String, index:Number, percentValue:Number):String {
+				return StringUtil.substitute("{0} ({1}%)",
+					"روز "+item.day,
+					percentValue.toFixed(1)+" - "+item.count);
+			}
+			
+		]]>
+	</fx:Script>
+	<s:VGroup width="100%" height="100%">
+		<components:PageHeader text="گزارش محصولات" width="100%" padding="0"/>
+		<s:VGroup width="100%" gap="-1">
+			<s:HGroup width="100%" gap="-1" verticalAlign="contentJustify">
+				
+				<components:FlowItem id="index" text="ردیف" width="50" background="#eeeeee"/>
+				<components:FlowItem id="storage" text="موجودی" width="100" background="#eeeeee"/>
+				<components:FlowItem id="title" align="justify" text="عنوان" width="100%" background="#eeeeee"/>
+				<components:FlowItem id="sell_price" text="قیمت" width="100" background="#eeeeee"/>
+				
+			</s:HGroup>
+			<s:DataGroup id="items" width="100%" itemRenderer="com.teamatec.verne.ui.renderers.ProductRenderer">
+				<s:layout>
+					<s:VerticalLayout gap="-1" horizontalAlign="contentJustify"/>
+				</s:layout>
+			</s:DataGroup>
+		</s:VGroup>
+		
+	</s:VGroup>
+	
+</reports:AbstractReport>

@@ -10,6 +10,7 @@
 			import com.maclema.mysql.MySqlToken;
 			import com.maclema.mysql.ResultSet;
 			import com.teamatec.verne.models.AbstractModel;
+			import com.teamatec.verne.models.FactorModel;
 			import com.teamatec.verne.models.ItemsModel;
 			import com.teamatec.verne.ui.elements.grids.FactorsGrid;
 			import com.teamatec.verne.ui.renderers.FactorActionsRenderer;
@@ -75,7 +76,8 @@
 			{
 				var lastGridData:IList = grid.dataProvider;
 				grid.dataProvider = null;
-				
+				var factorModel:FactorModel = new FactorModel();
+				factorModel.returnFactor(factorId);
 				var data:ArrayCollection = new ArrayCollection();
 				for(var i:uint = 0;i <lastGridData.length;i++)
 				{

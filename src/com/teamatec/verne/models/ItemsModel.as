@@ -12,7 +12,7 @@ package com.teamatec.verne.models
 		public function ItemsModel()
 		{
 			table = "items";
-			columns =  ["factor_id","product_id","description","count","tax","discount"];
+			columns =  ["factor_id","product_id","description","count","tax","discount","price"];
 		}
 		
 		public override function selectALL(callBack:Function, others:String=""):void

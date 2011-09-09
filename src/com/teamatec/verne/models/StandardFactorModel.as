@@ -108,11 +108,11 @@ package com.teamatec.verne.models
 					continue;
 				}
 				
-				item.total = item.sell_price* item.count;
+				item.total = item.price* item.count;
 				item.totalWithDiscount = item.total - item.discount;
 				item.totalWithTax = item.totalWithDiscount + item.tax;
 				
-				priceSum += item.sell_price;
+				priceSum += item.price;
 				totalPriceSum += item.total;
 				discountTotalSum += item.discount;
 				totalWithDiscountSum += item.totalWithDiscount;
