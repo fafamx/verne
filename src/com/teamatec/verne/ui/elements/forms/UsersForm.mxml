@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+<forms:AbstractForm xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					   xmlns:s="library://ns.adobe.com/flex/spark" 
+					   xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:elements="com.teamatec.verne.ui.elements.*"
+					   xmlns:forms="com.teamatec.verne.ui.elements.forms.*"
+					   width="100%" height="100%" xmlns:components="com.teamatec.verne.ui.components.*" creationComplete="creationCompleteHandler(event)" xmlns:validators="com.teamatec.verne.validators.*">
+	
+	<fx:Script>
+		<![CDATA[
+			import com.adobe.crypto.MD5;
+			import com.adobe.serialization.json.JSON;
+			import com.greensock.TweenLite;
+			import com.greensock.TweenNano;
+			import com.maclema.mysql.MySqlToken;
+			import com.maclema.mysql.ResultSet;
+			import com.teamatec.verne.models.*;
+			
+			import flashx.textLayout.elements.BreakElement;
+			
+			import mx.collections.ArrayCollection;
+			import mx.events.FlexEvent;
+			import mx.validators.Validator;
+			
+			import spark.events.TextOperationEvent;
+			
+			protected function submit_clickHandler(event:MouseEvent):void
+			{
+				cleanSummery();
+				var validations:Array = [titleValidation,userValidation];
+				if(!updateData)
+				{
+					validations.push(passwordValidation);
+				}
+				var validationResult:Array = Validator.validateAll(validations);
+				TweenNano.to(message,.5,{alpha:0});
+				if(validationResult.length == 0)
+				{
+					submit.enabled = false;
+					var pass:String;
+					if(updateData)
+					{
+						pass = updateData.password;
+						if(password.text.length != 0)
+						{
+							pass = MD5.hash(password.text);
+						}
+					}
+					else
+					{
+						pass = MD5.hash(password.text);
+					}
+					var access:String = JSON.encode(grid.dataProvider.toArray());
+					
+					var dbData:Array = [0,title.text,username.text,pass,access];
+					if(updateData)
+					{
+						model.update(dbData,"user_id = "+updateData.user_id);
+					}
+					else
+					{
+						model.insert(dbData);
+					}
+					model.addEventListener(Event.COMPLETE,storeComplete);
+				}
+			}
+			
+			protected function cleanSummery():void
+			{
+				TweenLite.to(summery,.5,{alpha:0});
+				summery.removeAllElements();
+			}
+			
+			protected function showSummery():void
+			{
+				TweenLite.to(summery,.5,{alpha:1});
+			}
+			
+			protected function storeComplete(event:Event):void
+			{
+				TweenNano.to(message,.5,{alpha:1});
+				submit.enabled = true;
+				if(updateData)
+				{
+					currentView.currentState = "grid";
+					currentView.selectData();
+				}
+			}
+			
+			public override function creationCompleteHandler(event:FlexEvent):void
+			{
+				model = new UserModel();
+				var access:ArrayCollection =  UserModel.systemAccessList;
+				passwordValidation.enabled = true;
+				if(updateData)
+				{
+					passwordValidation.enabled = false;
+					access = mergeAccess();
+					updateAction();
+				}
+				
+				grid.dataProvider = access;
+			}
+			
+			public function mergeAccess():ArrayCollection
+			{
+				var result:ArrayCollection = UserModel.systemAccessList;
+				var decoded:Object = JSON.decode(updateData.rights);
+				for(var i:uint = 0;i<decoded.length;i++)
+				{
+					var item:Object = decoded[i];
+					for(var j:uint = 0;j<result.length;j++)
+					{
+						if(item.code == result[j].code)
+						{
+							result[j].selected = item.selected;
+							break;
+						}
+					}
+				}
+				
+				return result;
+			}
+			
+			public function updateAction():void
+			{
+				title.text = updateData.name;
+				username.text = updateData.username;
+				password.text = "";
+			}
+			
+			public override function clean():void
+			{
+				super.clean();
+				title.text = "";
+				username.text = "";
+				password.text = "";
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<mx:StringValidator id="titleValidation" source="{title}" property="text" required="true" requiredFieldError="مقدار این فیلد اجباری می باشد."/>
+		<mx:StringValidator id="userValidation" source="{username}" property="text" required="true" requiredFieldError="مقدار این فیلد اجباری می باشد."/>
+		<mx:StringValidator id="passwordValidation" source="{password}" property="text" required="true" requiredFieldError="مقدار این فیلد اجباری می باشد."/>
+	</fx:Declarations>
+	<s:Form id="form" width="100%" height="100%" minWidth="550">
+		<s:FormHeading width="100%" label="فرم ثبت کاربر"/>
+		<s:FormItem label="نام" width="100%">
+			<s:TextInput id="title" width="250"/>
+		</s:FormItem>
+		<s:FormItem label="نام کاربری" width="100%">
+			<s:layout>
+				<s:HorizontalLayout verticalAlign="middle"/>
+			</s:layout>
+			<s:TextInput id="username" direction="ltr" textAlign="center"/>
+		</s:FormItem>
+		<s:FormItem label="رمز عبور" width="100%">
+			<s:layout>
+				<s:HorizontalLayout verticalAlign="middle"/>
+			</s:layout>
+			<s:TextInput id="password" direction="ltr" textAlign="center" displayAsPassword="true"/>
+		</s:FormItem>
+		<s:FormItem label="دسترسی ها" width="100%">
+			<s:layout>
+				<s:HorizontalLayout verticalAlign="middle"/>
+			</s:layout>
+			<s:DataGrid id="grid" width="100%" height="400" variableRowHeight="true">
+				<s:columns>
+					<s:ArrayList>
+						<s:GridColumn dataField="selected" editable="false" headerText="انتخاب" width="50" itemRenderer="com.teamatec.verne.ui.renderers.CheckBoxItemRenderer"/>
+						<s:GridColumn dataField="label" headerText="عنوان"/>
+					</s:ArrayList>
+				</s:columns>
+			</s:DataGrid>
+		</s:FormItem>
+		
+		<s:FormItem width="100%">
+			<s:layout>
+				<s:HorizontalLayout verticalAlign="middle"/>
+			</s:layout>
+			<components:IconButton id="submit" label="ذخیره اطلاعات" click="submit_clickHandler(event)"/>
+			<s:Label id="message" text="اطلاعات با موفقیت در بانک اطلاعاتی ذخیره شد." color="0x728e00" alpha="0">
+				<s:filters>
+					<s:DropShadowFilter distance="1" quality="3" blurX="0" blurY="0" color="0xffffff"/>
+				</s:filters>
+			</s:Label>
+		</s:FormItem>
+		<s:FormItem id="summery" width="100%" styleName="validation" alpha="0">
+		</s:FormItem>
+	</s:Form>
+</forms:AbstractForm>

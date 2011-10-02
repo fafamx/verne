@@ -8,7 +8,9 @@
 	</fx:Metadata>
 	<fx:Script>
 		<![CDATA[
+			import com.greensock.TweenMax;
 			import com.teamatec.verne.models.StandardFactorModel;
+			import com.teamatec.verne.ui.elements.ApplicationInterface;
 			
 			import mx.collections.ArrayCollection;
 			import mx.core.UIComponent;
@@ -52,6 +54,21 @@
 			
 			protected function creationCompleteHandler(event:FlexEvent):void
 			{
+				var item:String = getQualifiedClassName(this).split("::")[1];
+				if(ApplicationInterface.hasAccess(item) == -1)
+				{
+					enabled = false;
+					alpha = 0;
+					TweenMax.to(this,.5,{autoAlpha:.5});
+				}
+				else
+				{
+					parentDocument.enabled = true;
+					enabled = true;
+					alpha = 0;
+					TweenMax.to(this,.5,{autoAlpha:1});
+				}
+				
 				job = new PrintJob();
 				options.printMethod = PrintMethod.AUTO;
 				options.pixelsPerInch  = 400;

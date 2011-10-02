@@ -67,7 +67,11 @@
 					<s:SolidColorStroke color="#dddddd"/>
 				</s:stroke>
 			</s:Rect>
-			<s:RichText text="{'مبلغ قابل پرداخت به ریال : ' + money.format(model.totalWithTaxSum)}" fontSize="14" left="10" right="10" top="10" bottom="10" textAlign="center"/>
+			<s:VGroup left="10" right="10" top="10" bottom="10" horizontalAlign="center">
+				<s:RichText text="{'مبلغ قابل پرداخت به ریال : ' + money.format(model.totalWithTaxSum)}" fontSize="14" />
+				<s:RichText text="«هزینه حمل و نقل به عهده  خریدار می باشد»" fontSize="14" color="#cc0000" />
+			</s:VGroup>
+			
 		</s:Group>
 	</s:Group>
 </s:VGroup>

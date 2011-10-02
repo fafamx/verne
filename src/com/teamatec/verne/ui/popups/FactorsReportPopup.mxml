@@ -11,6 +11,7 @@
 			import com.maclema.mysql.ResultSet;
 			import com.teamatec.verne.models.ClientModel;
 			import com.teamatec.verne.models.SequenceModel;
+			import com.teamatec.verne.ui.elements.ApplicationInterface;
 			
 			import mx.collections.ArrayCollection;
 			import mx.events.FlexEvent;
@@ -46,6 +47,16 @@
 			
 			protected function creationCompleteHandler(event:FlexEvent):void
 			{
+				if(ApplicationInterface.hasAccess("FactorsReport") == -1)
+				{
+					enabled = false;
+					alpha = .5;
+				}
+				else
+				{
+					enabled = true;
+					alpha = 1;
+				}
 				var today:Date = new Date();
 				var shamsi:Vector.<uint> = Converter.changeMToSh(today.getFullYear(),today.getMonth()+1,today.date);
 				endDate.text = shamsi.join("/");

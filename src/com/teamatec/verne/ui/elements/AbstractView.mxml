@@ -13,6 +13,9 @@
 	</fx:Declarations>
 	<fx:Script>
 		<![CDATA[
+			import avmplus.getQualifiedClassName;
+			
+			import com.greensock.TweenMax;
 			import com.teamatec.verne.models.AbstractModel;
 			import com.teamatec.verne.ui.elements.grids.AbstractGrid;
 			
@@ -22,6 +25,7 @@
 			public var model:AbstractModel;
 			public static var gridToAbstract:Dictionary;
 			public var currentView:AbstractGrid;
+			public static var me:AbstractView;
 			
 			public function creationCompleteHandler(event:FlexEvent):void
 			{
@@ -56,12 +60,31 @@
 				{
 					gridToAbstract = new Dictionary(true);
 				}
+				
+				
+				
 			}
 			
 			protected function stateChangeCompleteHandler(event:FlexEvent):void
 			{
 				alpha = 0;
-				fadeIn.play();
+				me = this;
+				var item:String = getQualifiedClassName(this).split("::")[1];
+				trace(item,ApplicationInterface.hasAccess(item),"fuck");
+				if(ApplicationInterface.hasAccess(item) == -1)
+				{
+					enabled = false;
+					alpha = 0;
+					TweenMax.to(this,.5,{autoAlpha:.5});
+				}
+				else
+				{
+					
+					parentDocument.enabled = true;
+					enabled = true;
+					alpha = 0;
+					fadeIn.play();
+				}
 			}
 			
 		]]>

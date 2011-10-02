@@ -5,9 +5,14 @@
 	
 	<fx:Script>
 		<![CDATA[
+			import com.adobe.crypto.MD5;
+			import com.adobe.serialization.json.JSON;
 			import com.demonsters.debugger.MonsterDebugger;
 			import com.greensock.TweenMax;
+			import com.maclema.mysql.MySqlToken;
+			import com.maclema.mysql.ResultSet;
 			import com.teamatec.verne.models.SMSModel;
+			import com.teamatec.verne.models.UserModel;
 			import com.teamatec.verne.ui.elements.grids.AbstractGrid;
 			import com.teamatec.verne.ui.elements.grids.ClientsGrid;
 			import com.teamatec.verne.ui.elements.grids.ProductsGrid;
@@ -28,6 +33,7 @@
 			protected var smsModel:SMSModel;
 			protected var isMouseDown:Boolean = false;
 			protected var downPoint:Point;
+			public static var currentUser:Object;
 			
 			[Bindable]
 			public static var que:ArrayCollection;
@@ -57,6 +63,7 @@
 					buttonItems.addItem({id:"sequences",label:"مجموعه ها",icon:"resources/images/sequences.png"});
 					buttonItems.addItem({id:"factors",label:"فاکتور ها",icon:"resources/images/factors.png"});
 				}
+				buttonItems.addItem({id:"users",label:"کاربران",icon:"resources/images/message.png"});
 				buttonItems.getItemAt(0).last = true
 				
 				toolbar.buttons.dataProvider = buttonItems;
@@ -220,6 +227,57 @@
 				}
 			}
 			
+			protected function loginSubmit_clickHandler(event:MouseEvent):void
+			{
+				var usersModel:UserModel = new UserModel();
+				usersModel.selectALL(userSelected," WHERE username='"+username.text+"' and password ='"+MD5.hash(password.text)+"'");
+			}
+			
+			protected function userSelected(data:ResultSet, token:MySqlToken):void
+			{
+				var result:ArrayCollection = data.getRows();
+				if(result.length > 0)
+				{
+					currentUser = result.getItemAt(0);
+					if(currentUser.rights)
+					{
+						currentUser.rights = JSON.decode(currentUser.rights);
+					}
+					TweenMax.to(login,.5,{autoAlpha:0});
+				}
+			}
+			
+			public static function hasAccess(code:String):int
+			{
+				var result:int = 0;
+				var item:Object;
+				if(!currentUser)
+				{
+					result = 0;
+				}
+				
+				if(currentUser && currentUser.rights)
+				{
+					for(var i:uint =0;i<currentUser.rights.length;i++)
+					{
+						item = currentUser.rights[i];
+						if(item.code == code)
+						{
+							if(item.selected)
+							{
+								result = 1;
+							}
+							else
+							{
+								result = -1;
+							}
+							break;
+						}
+					}
+				}
+				return result;
+			}
+			
 		]]>
 	</fx:Script>
 	<fx:Declarations>
@@ -245,6 +303,7 @@
 		<s:State name="sequences"/>
 		<s:State name="factors"/>
 		<s:State name="categories"/>
+		<s:State name="users"/>
 	</s:states>
 	<s:Rect width="100%" height="100%">
 		<s:fill>
@@ -280,6 +339,7 @@
 					<grids:SMSGrid id="sms" includeIn="sms"/>
 					<grids:FactorsGrid id="factors" includeIn="factors"/>
 					<grids:SequencesGrid id="sequences" includeIn="sequences"/>
+					<grids:UsersGrid id="users" includeIn="users"/>
 				</s:Group>
 			</s:Scroller>
 		</s:Group>
@@ -298,4 +358,32 @@
 		</s:Group>
 	</mx:HDividedBox>
 	<popups:ConfirmPopup id="deleteConfirm" verticalCenter="0" horizontalCenter="0" visible="false" alpha="0"/>
+	<s:Group id="login" width="100%" height="100%">
+		<s:Rect width="100%" height="100%">
+			<s:fill>
+				<s:SolidColor color="0x000000" alpha=".5"/>
+			</s:fill>
+		</s:Rect>
+		<s:Group verticalCenter="0" horizontalCenter="0">
+			<s:Rect width="255" height="230" radiusX="10" radiusY="10">
+				<s:fill>
+					<s:SolidColor color="0xf1f1f1" alpha="1"/>
+				</s:fill>
+				<s:filters>
+					<s:DropShadowFilter distance="0" quality="3" blurX="10" blurY="10" color="0x333333"/>
+				</s:filters>
+			</s:Rect>
+			<s:Form id="loginForm" width="200">
+				<s:FormHeading width="100%" label="فرم ورود به سیستم"/>
+				<s:FormItem label="نام کاربری">
+					<s:TextInput id="username" direction="ltr" textAlign="center"/>
+				</s:FormItem>
+				<s:FormItem label="رمز کاربری">
+					<s:TextInput id="password" direction="ltr" textAlign="center" displayAsPassword="true"/>
+				</s:FormItem>
+			</s:Form>
+			<components:IconButton id="loginSubmit" label="ورود" horizontalCenter="0" bottom="10" click="loginSubmit_clickHandler(event)"/>
+		</s:Group>
+		
+	</s:Group>
 </s:Group>

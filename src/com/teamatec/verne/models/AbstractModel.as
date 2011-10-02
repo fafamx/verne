@@ -68,6 +68,7 @@ package com.teamatec.verne.models
 				updateValues[i] = updateColumns[i] + NumberUtil.internationalizeNumbers(updateValues[i]);
 			}
 			statement.sql = "UPDATE "+table + " SET " + updateValues + " WHERE "+ condition;
+			statement.sql = statement.sql.split("undefined").join("")
 			MonsterDebugger.trace(this,statement.sql);
 			var token:MySqlToken = statement.executeQuery();
 			var responder:AsyncResponder = new AsyncResponder(updateComplete,onFail,token);

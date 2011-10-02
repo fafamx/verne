@@ -5,9 +5,12 @@
 	
 	<fx:Script>
 		<![CDATA[
+			import avmplus.getQualifiedClassName;
+			
 			import com.greensock.TweenMax;
 			import com.teamatec.verne.models.AbstractModel;
 			import com.teamatec.verne.ui.elements.AbstractView;
+			import com.teamatec.verne.ui.elements.ApplicationInterface;
 			import com.teamatec.verne.ui.elements.forms.AbstractForm;
 			import com.teamatec.verne.ui.elements.grids.AbstractGrid;
 			
@@ -46,6 +49,18 @@
 				itemToColor[editButton] = 0x00d8ff;
 				iconize(deleteButton);
 				iconize(editButton);
+				
+				var item:String = getQualifiedClassName(AbstractView.me).split("::")[1];
+				
+				if(ApplicationInterface.hasAccess(item+"-delete") == -1)
+				{
+					deleteButton.visible = false;
+				}
+				
+				if(ApplicationInterface.hasAccess(item+"-edit") == -1)
+				{
+					editButton.visible = false;
+				}
 			}
 			
 			protected function deleteButton_clickHandler(event:MouseEvent):void
