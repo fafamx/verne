@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<popups:AbstractReportPopup xmlns:fx="http://ns.adobe.com/mxml/2009" 
+							xmlns:s="library://ns.adobe.com/flex/spark" 
+							xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:popups="com.teamatec.verne.ui.popups.*"
+							creationComplete="creationCompleteHandler(event)" xmlns:components="com.teamatec.verne.ui.components.*">
+	<fx:Declarations>
+		<s:RadioButtonGroup id="type"/>
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			import com.maclema.mysql.ResultSet;
+			import com.teamatec.verne.models.ClientModel;
+			import com.teamatec.verne.models.SequenceModel;
+			import com.teamatec.verne.ui.elements.ApplicationInterface;
+			
+			import mx.collections.ArrayCollection;
+			import mx.events.FlexEvent;
+			
+			import spark.components.RadioButton;
+			
+			protected var sequence:SequenceModel;
+			
+			
+			
+			protected function creationCompleteHandler(event:FlexEvent):void
+			{
+				if(ApplicationInterface.hasAccess("PaymentsReport") == -1)
+				{
+					enabled = false;
+					alpha = .5;
+				}
+				else
+				{
+					enabled = true;
+					alpha = 1;
+				}
+				var today:Date = new Date();
+				var shamsi:Vector.<uint> = Converter.changeMToSh(today.getFullYear(),today.getMonth()+1,today.date);
+				endDate.text = shamsi.join("/");
+				var lastWeek:Date = new Date();
+				lastWeek.date = lastWeek.date - 7;
+				shamsi = Converter.changeMToSh(lastWeek.getFullYear(),lastWeek.getMonth()+1,lastWeek.date);
+				startDate.text = shamsi.join("/");
+				
+				
+			}
+			
+			public function allClients(data:ResultSet, token:*):void
+			{
+				/* var items:ArrayCollection = data.getRows();
+				var companies:ArrayCollection = new ArrayCollection();
+				company_id.dataProvider = companies;
+				client_id.dataProvider = companies;
+				for(var i:uint=0;i<items.length;i++)
+				{
+					var item:Object = items.getItemAt(i);
+					companies.addItem({label:item.title,value:item.client_id});
+				} */
+			}
+			
+			protected function generate_clickHandler(event:MouseEvent):void
+			{
+				Verne.applicationInterface.payments.report.buildReport();
+			}
+			
+		]]>
+	</fx:Script>
+	<s:VGroup id="form" left="10" right="10" top="10" bottom="10" gap="10">
+		<s:Label text="تاریخ شروع :" width="100%"/>
+		<s:TextInput id="startDate" width="100%" direction="ltr" textAlign="center"/>
+		<s:Label text="تاریخ پایان :" width="100%"/>
+		<s:TextInput id="endDate" width="100%" direction="ltr" textAlign="center"/>
+		<components:IconButton id="generate" label="بروز رسانی" click="generate_clickHandler(event)"/>
+	</s:VGroup>
+</popups:AbstractReportPopup>

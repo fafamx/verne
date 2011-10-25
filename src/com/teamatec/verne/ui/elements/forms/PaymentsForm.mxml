@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="utf-8"?>
+<forms:AbstractForm xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					   xmlns:s="library://ns.adobe.com/flex/spark" 
+					   xmlns:mx="library://ns.adobe.com/flex/mx" xmlns:elements="com.teamatec.verne.ui.elements.*"
+					   xmlns:forms="com.teamatec.verne.ui.elements.forms.*"
+					   width="100%" height="100%" xmlns:components="com.teamatec.verne.ui.components.*" creationComplete="creationCompleteHandler(event)" xmlns:validators="com.teamatec.verne.validators.*">
+	
+	<fx:Script>
+		<![CDATA[
+			import com.adobe.crypto.MD5;
+			import com.adobe.serialization.json.JSON;
+			import com.greensock.TweenLite;
+			import com.greensock.TweenNano;
+			import com.maclema.mysql.MySqlToken;
+			import com.maclema.mysql.ResultSet;
+			import com.teamatec.verne.models.*;
+			import com.teamatec.verne.ui.elements.ApplicationInterface;
+			
+			import flashx.textLayout.elements.BreakElement;
+			
+			import mx.collections.ArrayCollection;
+			import mx.events.FlexEvent;
+			import mx.validators.Validator;
+			
+			import spark.events.TextOperationEvent;
+			
+			
+			
+			public override function creationCompleteHandler(event:FlexEvent):void
+			{
+				model = new PaymentModel();
+				var today:Date = new Date();
+				var shamsi:Vector.<uint> = Converter.changeMToSh(today.getFullYear(),today.getMonth()+1,today.date);
+				date.text = shamsi.join("/");
+				var client:ClientModel = new ClientModel();
+				client.selectALL(allClients);
+				var factor:FactorModel = new FactorModel();
+				factor.selectALL(allFactors);
+				if(updateData)
+				{
+					updateAction();
+				}
+			}
+			
+			
+			
+			protected function submit_clickHandler(event:MouseEvent):void
+			{
+				
+				var validationResult:Array = Validator.validateAll([valueValidation]);
+				TweenNano.to(message,.5,{alpha:0});
+				if(validationResult.length == 0)
+				{
+					submit.enabled = false;
+					var splitedDate:Array = date.text.split("/");
+					var itemDate:Vector.<uint> = Converter.changeShToM(splitedDate[0],splitedDate[1],splitedDate[2]);
+					var clientID : String ;
+					if(client_id.selectedItem)
+						clientID = client_id.selectedItem.value;
+					
+					var factorID : String ;
+					if(factor_id.selectedItem)
+						factorID = factor_id.selectedItem.value;
+					
+					
+					var dbData:Array = [value.text.split(",").join("") ,factorID,clientID, description.text , itemDate.join("-"),ApplicationInterface.currentUser.user_id];
+					if(updateData)
+					{
+						model.update(dbData,"payment_id = "+updateData.payment_id);
+						
+					}
+					else
+					{
+						model.insert(dbData);
+					}
+					model.addEventListener(Event.COMPLETE,storeComplete);
+					
+					
+				}
+				
+			}
+			
+			public function allClients(data:ResultSet, token:*):void
+			{
+				var items:ArrayCollection = data.getRows();
+				var clients:ArrayCollection = new ArrayCollection();
+				client_id.dataProvider = clients;
+				
+				for(var i:uint=0;i<items.length;i++)
+				{
+					var item:Object = items.getItemAt(i);
+					clients.addItem({label:item.title,value:item.client_id});
+					
+					
+					if(updateData && updateData.client_id == item.client_id)
+					{
+						client_id.selectedIndex = i;
+					}
+				}
+			}
+			
+			
+			public function allFactors(data:ResultSet, token:*):void
+			{
+				var items:ArrayCollection = data.getRows();
+				var factors:ArrayCollection = new ArrayCollection();
+				factor_id.dataProvider = factors;
+				
+				for(var i:uint=0;i<items.length;i++)
+				{
+					var item:Object = items.getItemAt(i);
+					factors.addItem({label:item.title+"_"+item.factor_id,value:item.factor_id});
+					
+					
+					if(updateData && updateData.factor_id == item.factor_id)
+					{
+						factor_id.selectedIndex = i;
+					}
+				}
+			}
+			
+			
+			
+			protected function storeComplete(event:Event):void
+			{
+				TweenNano.to(message,.5,{alpha:1});
+				submit.enabled = true;
+				
+				currentView.currentState = "grid";
+				currentView.selectData();
+				
+			}
+			
+			
+			
+			public function updateAction():void
+			{
+				value.text = money.format(updateData.value);
+				description.text = updateData.description;
+				
+				var shamsiDate:Vector.<uint> = Converter.changeMToSh(updateData.creation_date.getFullYear(),updateData.creation_date.getMonth()+1,updateData.creation_date.getDate());
+				date.text = shamsiDate[0]+"/"+shamsiDate[1]+"/"+shamsiDate[2];
+				
+			
+			}
+			
+			public override function clean():void
+			{
+				super.clean();
+				
+				value.text ="";
+				
+				client_id.selectedIndex=-1;
+				factor_id.selectedIndex = -1;
+				var today:Date = new Date();
+				var shamsi:Vector.<uint> = Converter.changeMToSh(today.getFullYear(),today.getMonth()+1,today.date);
+				date.text = shamsi.join("/");
+				
+				description.text = "";
+				Validator.validateAll([valueValidation]);
+			}
+			
+
+			protected function cost_changeHandler(event:TextOperationEvent):void
+			{
+				value.text = money.format(value.text);
+				value.selectRange(value.text.length,value.text.length);
+			}
+
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<mx:NumberFormatter id="money" precision="0"
+							rounding="up" decimalSeparatorTo="." thousandsSeparatorTo=","
+							useThousandsSeparator="true" useNegativeSign="true" />
+		<mx:StringValidator id="valueValidation" source="{value}" property="text" required="true" requiredFieldError="مقدار این فیلد اجباری می باشد."/>
+	</fx:Declarations>
+	<s:Form id="form" width="100%" height="100%" minWidth="550">
+		<s:FormHeading width="100%" label="فرم ثبت پرداخت"/>
+		<s:FormItem label="مبلغ" width="100%">
+			<s:TextInput id="value"  width="100" textAlign="center" text="" direction="ltr" change="cost_changeHandler(event)"/>
+		</s:FormItem>
+		<s:FormItem label="مشتری" width="100%">
+			<s:ComboBox id="client_id" width="250"/>
+		</s:FormItem>
+		<s:FormItem label="فاکتور" width="100%">
+			<s:ComboBox id="factor_id" width="250"/>
+		</s:FormItem>
+		<s:FormItem label="تاریخ" width="100%">
+			<s:TextInput id="date" width="100" direction="ltr" textAlign="center"/>
+		</s:FormItem>
+		<s:FormItem label="توضیحات" width="100%">
+			<s:TextArea id="description" width="450" height="100"/>
+		</s:FormItem>
+		<s:FormItem width="100%">
+			<s:layout>
+				<s:HorizontalLayout verticalAlign="middle"/>
+			</s:layout>
+			<components:IconButton id="submit" label="ذخیره اطلاعات" click="submit_clickHandler(event)"/>
+			<s:Label id="message" text="اطلاعات با موفقیت در بانک اطلاعاتی ذخیره شد." color="0x728e00" alpha="0">
+				<s:filters>
+					<s:DropShadowFilter distance="1" quality="3" blurX="0" blurY="0" color="0xffffff"/>
+				</s:filters>
+			</s:Label>
+		</s:FormItem>
+	</s:Form>
+</forms:AbstractForm>

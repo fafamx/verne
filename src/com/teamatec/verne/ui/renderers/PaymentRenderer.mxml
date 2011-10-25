@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				xmlns:s="library://ns.adobe.com/flex/spark" 
+				xmlns:mx="library://ns.adobe.com/flex/mx" 
+				autoDrawBackground="false" xmlns:components="com.teamatec.verne.ui.components.*"
+				dataChange="dataChangeHandler(event)">
+	<fx:Declarations>
+		<!--<s:NumberFormatter id="money" groupingSeparator=","/>-->
+		<mx:NumberFormatter id="money" precision="0"
+							rounding="up" decimalSeparatorTo="." thousandsSeparatorTo=","
+							useThousandsSeparator="true" useNegativeSign="true" />
+	</fx:Declarations>
+	<fx:Script>
+		<![CDATA[
+			import com.demonsters.debugger.MonsterDebugger;
+			import com.teamatec.utils.NumberUtil;
+			
+			import mx.events.FlexEvent;
+			
+			protected function dataChangeHandler(event:FlexEvent):void
+			{
+				MonsterDebugger.trace(this,data);
+				index.text = (itemIndex+1).toString();
+				if(!data) return; 
+				payment_id.text = data.payment_id;
+				client_title.text = emptyChecker(data.client_title); 
+				factor_id.text = emptyChecker(data.factor_id); 
+				value.text = money.format(data.value);
+			}
+			
+			private function emptyChecker(text : String):String
+			{
+				if(text == null || text =="0" || text == "")
+					return "-";
+				return text;
+			}
+		]]>
+	</fx:Script>
+	
+	<s:HGroup width="100%" gap="-1" verticalAlign="contentJustify">
+		
+		<components:FlowItem id="index" text="ردیف" width="50" />
+		<components:FlowItem id="payment_id" text="کد" width="100" />
+		<components:FlowItem id="client_title" align="justify" text="مشتری" width="100%" />
+		<components:FlowItem id="factor_id" align="justify" text="کد فاکتور" width="100%" />
+		<components:FlowItem id="value" text="مبلغ" width="100" />
+		
+	</s:HGroup>
+	
+</s:ItemRenderer>
