@@ -23,6 +23,7 @@
 			
 			public var fastPrint:Boolean = false;
 			public static var fastPrintFunction:Function;
+			public static var filteredFactors:ArrayCollection;
 			
 			public override function creationCompleteHandler(event:FlexEvent):void
 			{
@@ -92,11 +93,31 @@
 
 			protected function filter_changeHandler(event:TextOperationEvent):void
 			{
+				var items:ItemsModel = new ItemsModel();
+				items.selectALL(filteredItems,' WHERE (SELECT title FROM products where product_id = items.product_id) LIKE "%'+filter.text+'%" GROUP BY factor_id');
+			}
+			
+			protected function filteredItems(data:ResultSet, token:MySqlToken):void
+			{
+				filteredFactors = data.getRows();
+				filterResult();
+			}
+			
+			protected function filterResult():void
+			{
 				var data:ArrayCollection = new ArrayCollection();
 				for(var i:uint = 0;i<gridData.length;i++)
 				{
 					var item:Object = gridData.getItemAt(i);
-					if(item.client_title && String(item.client_title).indexOf(NumberUtil.internationalizeNumbers(filter.text)) != -1)
+					var isItemsFound:Boolean = false;
+					for(var j:uint = 0;j<filteredFactors.length;j++)
+					{
+						if(filteredFactors[j].factor_id == item.factor_id)
+						{
+							isItemsFound = true;
+						}
+					}
+					if((item.client_title && String(item.client_title).indexOf(NumberUtil.internationalizeNumbers(filter.text)) != -1) || isItemsFound)
 					{
 						data.addItem(item);
 					}

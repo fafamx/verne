@@ -29,6 +29,7 @@
 			
 			[Bindable]
 			protected var totalSum:uint = 0;
+			protected var totalBuySum:uint = 0;
 			
 			
 			protected var model:ProductModel;
@@ -37,6 +38,7 @@
 			{
 				super.buildReport();
 				totalSum = 0;
+				totalBuySum = 0;
 				
 				model = new ProductModel();
 				
@@ -52,8 +54,12 @@
 				for(var i:uint = 0;i<items.dataProvider.length;i++)
 				{
 					item = items.dataProvider.getItemAt(i);
-					totalSum += item.total;
+					totalSum += item.sell_price * item.storage;
+					totalBuySum += item.buy_price * item.storage;
 				}
+				
+				total.text = money.format(totalSum);
+				totalBuy.text = money.format(totalBuySum);
 			}
 			
 			public function chartData(data:ResultSet, token:MySqlToken):void
@@ -71,6 +77,14 @@
 	</fx:Script>
 	<s:VGroup width="100%" height="100%">
 		<components:PageHeader text="گزارش محصولات" width="100%" padding="0"/>
+		<s:HGroup width="100%">
+			<s:RichText text="مجموع موجودی :" fontSize="14" left="10" right="10" top="10" bottom="10" textAlign="center" color="#666666"/>
+			<s:RichText id="total" text="1000" fontSize="14" left="10" right="10" top="10" bottom="10" textAlign="center"/>
+		</s:HGroup>
+		<s:HGroup width="100%">
+			<s:RichText text="مجموع خرید :" fontSize="14" left="10" right="10" top="10" bottom="10" textAlign="center" color="#666666"/>
+			<s:RichText id="totalBuy" text="1000" fontSize="14" left="10" right="10" top="10" bottom="10" textAlign="center"/>
+		</s:HGroup>
 		<s:VGroup width="100%" gap="-1">
 			<s:HGroup width="100%" gap="-1" verticalAlign="contentJustify">
 				
@@ -78,6 +92,7 @@
 				<components:FlowItem id="storage" text="موجودی" width="100" background="#eeeeee"/>
 				<components:FlowItem id="title" align="justify" text="عنوان" width="100%" background="#eeeeee"/>
 				<components:FlowItem id="sell_price" text="قیمت" width="100" background="#eeeeee"/>
+				<components:FlowItem id="total_price" text="مجموع" width="100" background="#eeeeee"/>
 				
 			</s:HGroup>
 			<s:DataGroup id="items" width="100%" itemRenderer="com.teamatec.verne.ui.renderers.ProductRenderer">

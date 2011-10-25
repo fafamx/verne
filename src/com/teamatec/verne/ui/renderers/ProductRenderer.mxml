@@ -28,6 +28,8 @@
 				}
 				title.text = data.title;
 				total.text = money.format(data.sell_price);
+				
+				sum.text = money.format(data.sell_price * uint(data.storage));
 			}
 			
 		]]>
@@ -39,6 +41,7 @@
 		<components:FlowItem id="storage" text="12453" width="100"/>
 		<components:FlowItem id="title" align="justify" text="تست" width="100%"/>
 		<components:FlowItem id="total" text="123456789" width="100"/>
+		<components:FlowItem id="sum" text="123456789" width="100"/>
 		
 	</s:HGroup>
 	
