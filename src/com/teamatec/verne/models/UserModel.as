@@ -20,6 +20,10 @@ package com.teamatec.verne.models
 			columns =  ["company_id","name","username","password","rights"];
 			systemAccessList = new ArrayCollection();
 			
+			systemAccessList.addItem({label:"اضافه کردن پرداخت ",code:"PeymentsForm"});
+			
+			
+			
 			systemAccessList.addItem({label:"بخش کاربران",code:"UsersGrid"});
 			systemAccessList.addItem({label:"اضافه کردن کاربر",code:"UsersForm"});
 			systemAccessList.addItem({label:"حذف کاربر",code:"UsersGrid-delete"});

@@ -153,6 +153,7 @@ package com.teamatec.verne.models
 		protected function onComplete(data:*, token:*):void
 		{
 			var event:Event = new Event(Event.COMPLETE);
+			trace("complete " ,event);
 			dispatchEvent(event);
 		}
 		

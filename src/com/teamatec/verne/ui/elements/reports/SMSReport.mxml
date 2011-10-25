@@ -85,7 +85,7 @@
 				</mx:LineSeries>
 			</mx:series>
 		</mx:LineChart>
-		<components:PageHeader text="پیام ها به تفکیک وظعیت :" width="100%" padding="0"/>
+		<components:PageHeader text="پیام ها به تفکیک وضعیت :" width="100%" padding="0"/>
 		<mx:PieChart id="pie" dataProvider="{statusCount}" width="100%" height="250" layoutDirection="ltr">
 			<mx:series>
 				<mx:PieSeries
